@@ -1,0 +1,35 @@
+{
+  "name": "moodle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cibermoodle/Cibermoodel.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "chai": "^6.2.0",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-basic-auth": "^1.2.1",
+    "express-csrf": "^0.3.4",
+    "express-session": "^1.18.2",
+    "method-override": "^3.0.0",
+    "mocha": "^7.2.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.16.0",
+    "path": "^0.12.7"
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cibermoodle/Cibermoodel/issues"
+  },
+  "homepage": "https://github.com/cibermoodle/Cibermoodel#readme"
+}
