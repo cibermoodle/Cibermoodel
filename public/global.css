@@ -92,8 +92,13 @@
             height: 18px;
         }
         
-        @media (max-height: 350px) {
+        @media (max-height: 450px) {
             #page-footer {
             display: none;
         }
+        }
+    @media (max-width: 600px) {
+    .col-auto.social {
+        display: none;
     }
+}
