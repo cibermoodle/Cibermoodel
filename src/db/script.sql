@@ -57,6 +57,8 @@ CREATE TABLE profesor (
   usuario_id INT NOT NULL UNIQUE,
 
   departamento VARCHAR(100),
+  
+  foto_perfil varchar(255),
 
   FOREIGN KEY (usuario_id)
 
@@ -83,6 +85,8 @@ CREATE TABLE alumno (
   usuario_id INT NOT NULL UNIQUE,
 
   fecha_nacimiento DATE,
+  
+  foto_perfil varchar(255),
 
   FOREIGN KEY (usuario_id)
 
