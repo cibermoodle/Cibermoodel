@@ -1,1 +1,161 @@
-    
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body { height: 100%; }
+        body { display: flex; flex-direction: column; }
+        .spacer { flex: 1; }
+
+        #page-footer {
+            background-color: #003399;
+            color: #fff;
+            width: 100%;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .moove-container-fluid {
+            width: 100%;
+            padding: 0 15px;
+        }
+
+        .contenedor-footer {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            white-space: nowrap;
+        }
+
+        .col-auto.contact {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .img-logo-junta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .img-logo-junta img {
+            height: 60px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .copyright {
+            color: #fff;
+            font-size: 0.9rem;
+            margin-left: 20px;
+            flex-shrink: 0;
+        }
+
+        .col-auto.social {
+            margin-left: auto;
+            padding-right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+
+        .col-auto.social p {
+            color: #fff;
+            font-size: 0.9rem;
+            margin: 0 0 6px 0;
+        }
+
+        .col-auto.social ul {
+            list-style: none;
+            display: flex;
+            gap: 8px;
+        }
+
+        .col-auto.social ul li a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .col-auto.social ul li a:hover { background: rgba(255,255,255,0.3); }
+
+        .col-auto.social ul li a svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        @media (max-height: 350px) {
+            #page-footer {
+            display: none;
+        }
+}
+</style>
+
+<div class="spacer"></div>
+
+<footer id="page-footer" class="mt-auto redes_sociales">
+    <div class="moove-container-fluid footer-columns">
+        <div class="row contenedor-footer sin-enlaces">
+
+            <div class="col-auto contact">
+                <div class="img-logo-junta">
+                    <span class="logo logo-ue">
+                        <img src="https://educacionadistancia.juntadeandalucia.es/centros/cadiz/theme/image.php/centros/theme_eva/1773325223/footer/footer-eu" alt="" title="Unión Europea">
+                    </span>
+                    <span class="logo logo-footer-gob-esp">
+                        <img src="https://educacionadistancia.juntadeandalucia.es/centros/cadiz/theme/image.php/centros/theme_eva/1773325223/footer/footer-gob-esp" alt="Logo Gobierno de España" title="Ministerio de Hacienda">
+                    </span>
+                    <span class="logo logo-footer-fondos">
+                        <img src="https://educacionadistancia.juntadeandalucia.es/centros/cadiz/theme/image.php/centros/theme_eva/1773325223/footer/footer-fondos" alt="Logo Fondos Europeos" title="Fondos Europeos">
+                    </span>
+                    <span class="logo junta-escritorio">
+                        <img src="https://educacionadistancia.juntadeandalucia.es/centros/cadiz/theme/image.php/centros/theme_eva/1773325223/logo_junta_blanco" alt="" title="Junta de Andalucía">
+                    </span>
+                </div>
+            </div>
+
+            <p class="copyright" style="padding-left: 30px;">@Copyright C.E.T.I</p>
+
+            <div class="col-auto social">
+                <p>Síguenos</p>
+                <ul>
+                    <li>
+                        <a href="https://www.facebook.com/EducaAnd" target="_blank">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://x.com/educaand" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1668.56 1221.19"><path d="M283.94,167.31l386.39,516.64L281.5,1104h87.51l340.42-367.76L984.48,1104h297.8L874.15,558.3l361.92-390.99h-87.51l-313.51,338.7l-253.31-338.7H283.94z M412.63,231.77h136.81l604.13,807.76h-136.81L412.63,231.77z" transform="translate(52.39 -25.059)" fill="#ffffff"></path></svg>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/channel/UCq8I8XprHmCs8R_Jj3hSYdA" target="_blank">
+                            <i class="fa fa-youtube"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.instagram.com/educaand/" target="_blank">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
