@@ -102,3 +102,233 @@
         display: none;
     }
 }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+.header {
+  background: #fff;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  height: 58px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Logo */
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-right: 1px solid #dee2e6;
+  padding-right: 16px;
+  flex-shrink: 0;
+}
+.moodle-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+.moodle-icon {
+  width: 38px; height: 38px;
+  background: #3a7d44;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.moodle-text { display: flex; flex-direction: column; line-height: 1; }
+.moodle-text span:first-child { font-size: 15px; font-weight: 700; color: #3a7d44; }
+.moodle-text span:last-child  { font-size: 11px; color: #555; font-weight: 500; }
+
+/* Nombre del centro */
+.centro-info { font-size: 13px; color: #555; white-space: nowrap; flex-shrink: 0; }
+.centro-info strong { color: #222; }
+
+/* Navegación */
+.nav-area {
+  display: flex; align-items: center;
+  gap: 2px; flex: 1; height: 100%;
+}
+.nav-link {
+  font-size: 14px; color: #555;
+  text-decoration: none;
+  padding: 0 14px; height: 100%;
+  display: flex; align-items: center;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+.nav-link:hover { color: #1a73e8; background: #f8f9fa; }
+.nav-link.active {
+  color: #1a73e8;
+  border-bottom: 3px solid #1a73e8;
+  font-weight: 600;
+}
+.nav-link--teacher { color: #d97706; }
+.nav-link--teacher:hover { color: #b45309; background: #fffbeb; }
+.nav-link--teacher.active {
+  color: #d97706;
+  border-bottom: 3px solid #d97706;
+}
+
+/* Toolbar */
+.toolbar { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: transparent; color: #555;
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600;
+  position: relative;
+  transition: background .15s;
+}
+.icon-btn:hover { background: #f0f0f0; }
+
+/* Badge notificaciones */
+.notif-badge {
+  position: absolute;
+  top: -2px; right: -2px;
+  min-width: 17px; height: 17px;
+  background: #e53e3e;
+  color: white;
+  font-size: 10px; font-weight: 700;
+  border-radius: 9px;
+  padding: 0 4px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+
+/* Avatar */
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #1a3e6e; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.avatar-wrapper {
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer; position: relative;
+}
+.avatar-wrapper span { font-size: 11px; color: #555; }
+
+/* Badge rol */
+.rol-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.rol-alumno   { background: #dcfce7; color: #15803d; }
+.rol-profesor { background: #fef3c7; color: #d97706; }
+
+/* Toggle edición */
+.toggle { position: relative; display: inline-block; width: 38px; height: 20px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #ccc; border-radius: 20px; transition: .3s;
+}
+.slider:before {
+  position: absolute; content: "";
+  height: 14px; width: 14px;
+  left: 3px; bottom: 3px;
+  background: white; border-radius: 50%; transition: .3s;
+}
+input:checked + .slider { background: #1a73e8; }
+input:checked + .slider:before { transform: translateX(18px); }
+.edit-mode-label { font-size: 13px; color: #333; white-space: nowrap; }
+
+/* Dropdowns */
+.dropdown-wrapper { position: relative; }
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity .15s, transform .15s;
+  min-width: 200px;
+}
+.dropdown-menu.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+/* Dropdown notificaciones */
+.notif-menu { width: 300px; }
+.dropdown-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px 8px;
+  font-size: 13px; font-weight: 600; color: #222;
+  border-bottom: 1px solid #dee2e6;
+}
+.dropdown-head a { font-size: 12px; color: #1a73e8; text-decoration: none; font-weight: 500; }
+.notif-list { list-style: none; max-height: 240px; overflow-y: auto; }
+.notif-item {
+  display: flex; gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background .12s;
+}
+.notif-item:hover { background: #f8f9fa; }
+.notif-item.unread { background: #eff6ff; }
+.notif-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #1a73e8; flex-shrink: 0; margin-top: 5px;
+}
+.notif-item:not(.unread) .notif-dot { background: transparent; }
+.notif-text { font-size: 12px; color: #333; line-height: 1.4; }
+.notif-time { font-size: 11px; color: #888; margin-top: 2px; display: block; }
+.notif-empty { padding: 20px; text-align: center; font-size: 13px; color: #888; }
+.dropdown-foot {
+  display: block; text-align: center;
+  padding: 10px; font-size: 12px;
+  color: #1a73e8; font-weight: 500;
+  text-decoration: none;
+  border-top: 1px solid #dee2e6;
+}
+.dropdown-foot:hover { background: #f8f9fa; border-radius: 0 0 8px 8px; }
+
+/* Dropdown perfil */
+.profile-menu { width: 210px; }
+.profile-menu-header {
+  padding: 14px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.profile-menu-name { font-size: 13px; font-weight: 600; color: #222; }
+.profile-menu-email { font-size: 11px; color: #888; }
+.menu-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px; color: #444;
+  text-decoration: none;
+  transition: background .12s;
+}
+.menu-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.menu-item:hover { background: #f8f9fa; color: #222; }
+.menu-divider { height: 1px; background: #dee2e6; margin: 4px 0; }
+.menu-item--danger { color: #e53e3e; }
+.menu-item--danger:hover { background: #fff5f5; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .centro-info { display: none; }
+  .edit-mode-label { display: none; }
+}
+@media (max-width: 680px) {
+  .nav-area { display: none; }
+}
