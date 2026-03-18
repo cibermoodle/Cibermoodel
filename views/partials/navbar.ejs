@@ -1,15 +1,46 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" href="/">Cibermoodel</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Inicio</a>
-                </li>
-            </ul>
-        </div>
+<nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary navbar-dark bg-dark" data-bs-theme="dark">
+  <div class="container-fluid">
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="#">Moodle</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav container-fluid">
+        <a class="nav-link active" aria-current="inicio" href="#">Inicio</a>
+        <a class="nav-link" href="#">Placeholder</a>
+        <a class="nav-link" href="#">Placeholder</a>
+        <a class="nav-link" >Placeholder</a>
+            <div class="dropdown ms-lg-auto">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                Cuenta
+                </button>
+                    <ul class="dropdown-menu dropdown-menu-lg-end">
+                        <form class="px-4 py-3">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="email@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label for="contraseña" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="contraseña" placeholder="Contraseña">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="dropdownCheck">
+                                    <label class="form-check-label" for="dropdownCheck">
+                                    Recuérdame
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+                        </form>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Crear cuenta</a>
+                        <a class="dropdown-item" href="#">Recordar contraseña</a>
+                    </ul>
+            </div>
+      </div>
     </div>
+  </div>
 </nav>
