@@ -140,7 +140,7 @@ CREATE TABLE clase (
 
 -- CLASE_ALUMNO (N:M)
 
--- -----------------------------------------------------
+-- -------------------------------------------------------
 
 CREATE TABLE clase_alumno (
 
@@ -315,5 +315,15 @@ CREATE TABLE respuesta (
 ) ENGINE=InnoDB;
 
 
-
 SET FOREIGN_KEY_CHECKS = 1; 
+
+DROP EVENT IF EXISTS activacion_test_moodle;
+CREATE EVENT activacion_test_moodle
+ON SCHEDULE EVERY 5 MINUTE
+DO
+  UPDATE test SET activo = CASE
+    WHEN start_at <= NOW() AND NOW() < DATE_ADD(start_at, INTERVAL duracion_min MINUTE) THEN 'activa'
+    WHEN NOW() > DATE_ADD(start_at, INTERVAL duracion_min MINUTE) THEN 'inactiva'
+    ELSE activo
+  END
+  WHERE start_at IS NOT NULL;
