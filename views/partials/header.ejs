@@ -1,5 +1,164 @@
-<header class="bg-light py-3 border-bottom">
-    <div class="container">
-        <h2>Cibermoodel - Plataforma Educativa</h2>
+<%
+  const unreadCount = (notificaciones || []).filter(n => !n.leida).length;
+  const iniciales = user
+    ? user.nombre.charAt(0).toUpperCase() + user.apellido.charAt(0).toUpperCase()
+    : 'US';
+%>
+
+<link rel="stylesheet" href="../../public/global.css">
+<header class="header">
+
+  <!-- LOGO -->
+  <div class="logo-area">
+    <a class="moodle-logo" href="http://localhost:3000">
+      <div class="moodle-icon">
+        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 72V38c0-3 2-5 5-5h6c3 0 5 2 5 5v34h10V50c0-3 2-5 5-5h6c3 0 5 2 5 5v22h10V46c0-3 2-5 5-5h6c3 0 5 2 5 5v26"
+            stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="moodle-text">
+        <span>Cibermoodle</span>
+        <span>Campus Virtual</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- NOMBRE DEL CENTRO -->
+  <div class="centro-info">
+    Centro: &nbsp;<strong><%= typeof centro !== 'undefined' ? centro : 'I.E.S. Mar de Cádiz' %></strong>
+  </div>
+
+  <!-- NAVEGACIÓN -->
+  <nav class="nav-area">
+    <a href="/dashboard"  class="nav-link <%= paginaActual === 'dashboard'  ? 'active' : '' %>">Área personal</a>
+    <a href="/cursos"     class="nav-link <%= paginaActual === 'cursos'     ? 'active' : '' %>">Mis cursos</a>
+    <a href="/tareas"     class="nav-link <%= paginaActual === 'tareas'     ? 'active' : '' %>">Tareas</a>
+    <a href="/proyectos"  class="nav-link <%= paginaActual === 'proyectos'  ? 'active' : '' %>">Proyectos</a>
+    <a href="/calendario" class="nav-link <%= paginaActual === 'calendario' ? 'active' : '' %>">Calendario</a>
+    <% if (user && user.rol === 'profesor') { %>
+    <a href="/mis-clases" class="nav-link nav-link--teacher <%= paginaActual === 'mis-clases' ? 'active' : '' %>">Mis clases</a>
+    <% } %>
+  </nav>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+
+    <!-- Ayuda -->
+    <button class="icon-btn" title="Ayuda">?</button>
+
+    <!-- Notificaciones -->
+    <div class="dropdown-wrapper" id="notifWrapper">
+      <button class="icon-btn" id="notifBtn" title="Notificaciones">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <% if (unreadCount > 0) { %>
+          <span class="notif-badge"><%= unreadCount > 9 ? '9+' : unreadCount %></span>
+        <% } %>
+      </button>
+
+      <div class="dropdown-menu notif-menu" id="notifMenu">
+        <div class="dropdown-head">
+          <span>Notificaciones</span>
+          <% if (unreadCount > 0) { %>
+            <a href="/notificaciones/leidas">Marcar todas</a>
+          <% } %>
+        </div>
+        <ul class="notif-list">
+          <% if ((notificaciones || []).length === 0) { %>
+            <li class="notif-empty">Sin notificaciones nuevas</li>
+          <% } else { %>
+            <% (notificaciones || []).slice(0, 5).forEach(n => { %>
+              <li class="notif-item <%= !n.leida ? 'unread' : '' %>">
+                <span class="notif-dot"></span>
+                <div>
+                  <p class="notif-text"><%= n.texto %></p>
+                  <time class="notif-time"><%= n.fecha %></time>
+                </div>
+              </li>
+            <% }) %>
+          <% } %>
+        </ul>
+        <a href="/notificaciones" class="dropdown-foot">Ver todas las notificaciones</a>
+      </div>
     </div>
+
+    <!-- Mensajes -->
+    <button class="icon-btn" title="Mensajes" onclick="location.href='/mensajes'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </button>
+
+    <!-- Avatar + dropdown perfil -->
+    <div class="dropdown-wrapper" id="profileWrapper">
+      <div class="avatar-wrapper" id="profileBtn">
+        <div class="avatar"><%= iniciales %></div>
+        <span>▾</span>
+      </div>
+
+      <div class="dropdown-menu profile-menu" id="profileMenu">
+        <div class="profile-menu-header">
+          <span class="profile-menu-name"><%= user ? user.nombre + ' ' + user.apellido : 'Usuario' %></span>
+          <span class="profile-menu-email"><%= user && user.email ? user.email : '' %></span>
+          <span class="rol-badge <%= user && user.rol === 'profesor' ? 'rol-profesor' : 'rol-alumno' %>">
+            <%= user && user.rol === 'profesor' ? 'Profesor' : 'Alumno' %>
+          </span>
+        </div>
+        <a href="/perfil" class="menu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi perfil
+        </a>
+        <a href="/configuracion" class="menu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Configuración
+        </a>
+        <% if (user && user.rol === 'profesor') { %>
+        <a href="/mis-alumnos" class="menu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Mis alumnos
+        </a>
+        <% } %>
+        <div class="menu-divider"></div>
+        <a href="/logout" class="menu-item menu-item--danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </a>
+      </div>
+    </div>
+
+    <!-- Modo edición (solo profesores) -->
+    <% if (user && user.rol === 'profesor') { %>
+    <span class="edit-mode-label">Modo de edición</span>
+    <label class="toggle" title="Activar modo edición">
+      <input type="checkbox" id="editToggle">
+      <span class="slider"></span>
+    </label>
+    <% } %>
+
+  </div>
 </header>
+
+<script>
+(function () {
+  const notifBtn    = document.getElementById('notifBtn');
+  const notifMenu   = document.getElementById('notifMenu');
+  const profileBtn  = document.getElementById('profileBtn');
+  const profileMenu = document.getElementById('profileMenu');
+
+  function toggle(menu, other) {
+    other.classList.remove('open');
+    menu.classList.toggle('open');
+  }
+
+  notifBtn.addEventListener('click',    e => { e.stopPropagation(); toggle(notifMenu, profileMenu); });
+  profileBtn.addEventListener('click',  e => { e.stopPropagation(); toggle(profileMenu, notifMenu); });
+  document.addEventListener('click',   () => { notifMenu.classList.remove('open'); profileMenu.classList.remove('open'); });
+  notifMenu.addEventListener('click',    e => e.stopPropagation());
+  profileMenu.addEventListener('click',  e => e.stopPropagation());
+})();
+</script>
+
