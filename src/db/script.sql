@@ -327,3 +327,134 @@ DO
     ELSE activo
   END
   WHERE start_at IS NOT NULL;
+
+
+INSERT INTO usuario (nombre, apellidos, email, password_hash, rol) VALUES
+-- Profesores
+('Carlos',  'García López',    'carlos.garcia@escuela.com',   '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
+('Laura',   'Martínez Ruiz',   'laura.martinez@escuela.com',  '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
+('Sergio',  'Fernández Mora',  'sergio.fernandez@escuela.com','9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
+-- Alumnos
+('Ana',     'López Sánchez',   'ana.lopez@alumno.com',        '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'alumno'),
+('Pablo',   'Ramírez Torres',  'pablo.ramirez@alumno.com',    '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'alumno'),
+('Marta',   'Jiménez Vega',    'marta.jimenez@alumno.com',    '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'alumno'),
+-- Admin
+('Admin',   'Sistema',         'admin@escuela.com',           '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'admin');
+
+-- =====================================================
+-- PROFESORES
+-- =====================================================
+INSERT INTO profesor (usuario_id, departamento) VALUES
+(1, 'Matemáticas'),
+(2, 'Lengua y Literatura'),
+(3, 'Historia');
+
+-- =====================================================
+-- ALUMNOS
+-- =====================================================
+INSERT INTO alumno (usuario_id, fecha_nacimiento) VALUES
+(4, '2005-03-15'),
+(5, '2006-07-22'),
+(6, '2005-11-08');
+
+-- =====================================================
+-- CLASES (1 por profesor)
+-- =====================================================
+INSERT INTO clase (profesor_id, nombre, descripcion, codigo_acceso, activa) VALUES
+(1, 'Álgebra I',           'Introducción al álgebra lineal y ecuaciones.',     'ALG2025A', 'activa'),
+(2, 'Lengua Castellana',   'Gramática, ortografía y comprensión lectora.',      'LEN2025B', 'activa'),
+(3, 'Historia Moderna',    'Europa del siglo XV al XVIII.',                     'HIS2025C', 'activa');
+
+-- =====================================================
+-- CLASE_ALUMNO (los 3 alumnos en las 3 clases)
+-- =====================================================
+INSERT INTO clase_alumno (clase_id, alumno_id) VALUES
+(1, 1), (1, 2), (1, 3),
+(2, 1), (2, 2), (2, 3),
+(3, 1), (3, 2), (3, 3);
+
+-- =====================================================
+-- TESTS (1 por profesor)
+-- =====================================================
+INSERT INTO test (profesor_id, titulo, descripcion, duracion_min, activo, start_at) VALUES
+(1, 'Test Álgebra Básica',      'Ecuaciones de primer y segundo grado.',    30, 'activa',   '2025-01-10 09:00:00'),
+(2, 'Test Gramática',           'Tipos de oraciones y análisis sintáctico.', 45, 'activa',  '2025-01-11 10:00:00'),
+(3, 'Test Historia Moderna',    'Renacimiento y Reforma Protestante.',      60, 'inactiva', '2025-01-12 11:00:00');
+
+-- =====================================================
+-- PREGUNTAS (3 por test = 9 total)
+-- =====================================================
+INSERT INTO pregunta (test_id, enunciado, feedback, orden) VALUES
+-- Test 1: Álgebra
+(1, '¿Cuánto vale x en la ecuación 2x + 4 = 10?',                  'Despeja x restando 4 y dividiendo entre 2.', 1),
+(1, '¿Cuál es el resultado de (x+3)(x-3)?',                         'Aplica la identidad notable a²-b².',         2),
+(1, '¿Qué tipo de ecuación es x² - 5x + 6 = 0?',                   'Tiene grado 2, por tanto es de 2º grado.',   3),
+-- Test 2: Gramática
+(2, '¿Qué función cumple el sujeto en una oración?',                'El sujeto realiza la acción del verbo.',      1),
+(2, '¿Cuál de estas palabras es un adverbio?',                      'Los adverbios modifican al verbo.',           2),
+(2, '¿Qué es un sintagma nominal?',                                 'Grupo de palabras con núcleo sustantivo.',    3),
+-- Test 3: Historia
+(3, '¿En qué año comenzó la Reforma Protestante?',                  'Lutero publicó sus tesis en 1517.',           1),
+(3, '¿Quién pintó la Capilla Sixtina?',                             'Obra del Renacimiento italiano.',             2),
+(3, '¿Qué tratado puso fin a las guerras de religión en Alemania?', 'Firmado en 1555.',                            3);
+
+-- =====================================================
+-- OPCIONES (4 por pregunta = 36 total)
+-- =====================================================
+INSERT INTO opcion (pregunta_id, texto, es_correcta, letra) VALUES
+-- Pregunta 1
+(1, 'x = 2', 0, 'A'),
+(1, 'x = 3', 1, 'B'),
+(1, 'x = 4', 0, 'C'),
+(1, 'x = 5', 0, 'D'),
+-- Pregunta 2
+(2, 'x² + 9',  0, 'A'),
+(2, 'x² - 9',  1, 'B'),
+(2, 'x² - 6x', 0, 'C'),
+(2, '2x - 9',  0, 'D'),
+-- Pregunta 3
+(3, 'Lineal',           0, 'A'),
+(3, 'De segundo grado', 1, 'B'),
+(3, 'Exponencial',      0, 'C'),
+(3, 'Cúbica',           0, 'D'),
+-- Pregunta 4
+(4, 'Modificar al adjetivo',         0, 'A'),
+(4, 'Realizar la acción del verbo',  1, 'B'),
+(4, 'Complementar al verbo',         0, 'C'),
+(4, 'Determinar al sustantivo',      0, 'D'),
+-- Pregunta 5
+(5, 'Rápido',    1, 'A'),
+(5, 'Hermoso',   0, 'B'),
+(5, 'Correr',    0, 'C'),
+(5, 'Mesa',      0, 'D'),
+-- Pregunta 6
+(6, 'Grupo con núcleo verbal',        0, 'A'),
+(6, 'Grupo con núcleo sustantivo',    1, 'B'),
+(6, 'Grupo con núcleo adjetival',     0, 'C'),
+(6, 'Grupo con núcleo adverbial',     0, 'D'),
+-- Pregunta 7
+(7, '1492', 0, 'A'),
+(7, '1517', 1, 'B'),
+(7, '1534', 0, 'C'),
+(7, '1555', 0, 'D'),
+-- Pregunta 8
+(8, 'Rafael',       0, 'A'),
+(8, 'Donatello',    0, 'B'),
+(8, 'Miguel Ángel', 1, 'C'),
+(8, 'Leonardo',     0, 'D'),
+-- Pregunta 9
+(9, 'Tratado de Westfalia', 0, 'A'),
+(9, 'Paz de Augsburgo',     1, 'B'),
+(9, 'Edicto de Nantes',     0, 'C'),
+(9, 'Paz de Utrecht',       0, 'D');
+
+-- =====================================================
+-- RESPUESTAS (cada alumno responde el test 1 completo)
+-- =====================================================
+INSERT INTO respuesta (alumno_id, pregunta_id, opcion_id) VALUES
+-- Alumno 1 (Ana) - todas correctas
+(1, 1, 2), (1, 2, 6), (1, 3, 10),
+-- Alumno 2 (Pablo) - mezcla de aciertos y fallos
+(2, 1, 1), (2, 2, 6), (2, 3, 9),
+-- Alumno 3 (Marta) - todas incorrectas
+(3, 1, 1), (3, 2, 5), (3, 3, 9);
