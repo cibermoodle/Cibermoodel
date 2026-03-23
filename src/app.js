@@ -27,15 +27,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ Rutas profesor (todo por /profesor)
+const profesorRoutes = require('../routes/profesor/profesorroute');
+app.use('/profesor', profesorRoutes);
+
 // Rutas de prueba
 app.get('/', (req, res) => {
     res.render('index', { title: 'Home' });
 });
 app.get('/alumno', (req, res) => {
     res.render('alumno/alumno', { title: 'Alumno', paginaActual: 'alumno' });
-});
-app.get('/profesor', (req, res) => {
-    res.render('profesor/profesor', { title: 'Profesor', paginaActual: 'profesor' });
 });
 
 // Manejo de errores 404
@@ -45,7 +46,9 @@ app.use((req, res) => {
 
 // Manejo de errores 500
 app.use((err, req, res, next) => {
-    res.status(500).render('500', { title: 'Error del servidor' });
+    console.error('❌ ERROR 500:', err.message);
+    console.error(err.stack);
+    res.status(500).send('<pre>' + err.stack + '</pre>');
 });
 
 // Puerto
