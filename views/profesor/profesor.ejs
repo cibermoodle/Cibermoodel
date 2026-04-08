@@ -1,0 +1,82 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo">Vista de clases</h2>
+    <a href="/profesor/crearclase" class="btn-nueva-clase">＋ Nueva clase</a>
+</div>
+
+<% if (clases.length === 0) { %>
+    <div class="clases-vacio">
+        <div class="icono">📚</div>
+        <p>Aún no tienes ninguna clase creada.</p>
+        <a href="/profesor/crearclase" class="btn-nueva-clase">＋ Crear primera clase</a>
+    </div>
+<% } else { %>
+    <div class="clases-grid">
+        <% clases.forEach(clase => { %>
+        <div class="clase-card" data-id="<%= clase.clase_id %>">
+            <div class="clase-card-banner">
+                <p class="clase-card-banner-titulo"><%= clase.nombre %></p>
+                <a href="/profesor/editarclase/<%= clase.clase_id %>" class="btn-editar-card">✏️ Editar</a>
+                <button class="btn-eliminar-card" onclick="eliminarClase(this, <%= clase.clase_id %>)">🗑️ Eliminar</button>
+            </div>
+            <div class="clase-card-acciones">
+                <a href="/profesor/registrados/<%= clase.clase_id %>" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Alumnos
+                </a>
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+                    Cuestionario
+                </a>
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    Foro
+                </a>
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Calificaciones
+                </a>
+               <!-- <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                    Recursos
+                </a> -->
+            </div>
+            <div class="clase-card-footer">
+                <span>Código: <span class="codigo-badge"><%= clase.codigo_acceso %></span></span>
+                <span><%= clase.activa === 'activa' ? '✅ Activa' : '⏸ Inactiva' %></span>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+<% } %>
+
+<script>
+document.querySelectorAll('.clase-card').forEach(card => {
+    const id = card.dataset.id;
+    const color = localStorage.getItem('clase_color_' + id);
+    if (color) {
+        card.querySelector('.clase-card-banner').style.background =
+            `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`;
+    }
+});
+
+async function eliminarClase(btn, id) {
+    if (!confirm('¿Seguro que quieres eliminar esta clase?')) return;
+
+    const card = btn.closest('.clase-card');
+
+    try {
+        const res = await fetch(`/profesor/eliminarclase/${id}`, { method: 'POST' });
+        if (res.ok || res.redirected) {
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.remove(), 300);
+        } else {
+            alert('Error al eliminar la clase.');
+        }
+    } catch (err) {
+        alert('Error de conexión.');
+    }
+}
+</script>

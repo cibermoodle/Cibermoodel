@@ -27,15 +27,65 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ Rutas profesor (todo por /profesor)
+const profesorRoutes = require('../routes/profesor/profesorroute');
+app.use('/profesor', profesorRoutes);
+
+// ✅ Rutas alumno (todo por /alumno)
+const alumnoRoutes = require('../routes/alumno/alumnoroute');
+app.use('/alumno', alumnoRoutes);
+
+// ✅ Rutas de navegación principal del alumno
+app.get('/cursos', async (req, res) => {
+    const pool = require('./db/mysql');
+    const profesor_id = 1;
+    try {
+        const [clases] = await pool.query(
+            'SELECT * FROM clase WHERE profesor_id = ? ORDER BY created_at DESC',
+            [profesor_id]
+        );
+        res.render('profesor/profesor', { 
+            clases,
+            title: 'Mis cursos',
+            paginaActual: 'cursos'
+        });
+    } catch (err) {
+        console.error('❌ ERROR:', err.message);
+        res.render('profesor/profesor', { 
+            clases: [],
+            title: 'Mis cursos',
+            paginaActual: 'cursos'
+        });
+    }
+});
+
+app.get('/tareas', (req, res) => {
+    res.render('alumno/tareas', { 
+        title: 'Tareas',
+        tareas: [],
+        paginaActual: 'tareas'
+    });
+});
+
+app.get('/proyectos', (req, res) => {
+    res.render('alumno/proyectos', { 
+        title: 'Proyectos',
+        proyectos: [],
+        paginaActual: 'proyectos'
+    });
+});
+
+app.get('/calendario', (req, res) => {
+    res.render('alumno/calendario', { 
+        title: 'Calendario',
+        eventos: [],
+        paginaActual: 'calendario'
+    });
+});
+
 // Rutas de prueba
 app.get('/', (req, res) => {
     res.render('index', { title: 'Home' });
-});
-app.get('/alumno', (req, res) => {
-    res.render('alumno/alumno', { title: 'Alumno', paginaActual: 'alumno' });
-});
-app.get('/profesor', (req, res) => {
-    res.render('profesor/profesor', { title: 'Profesor', paginaActual: 'profesor' });
 });
 
 // Manejo de errores 404
@@ -45,7 +95,9 @@ app.use((req, res) => {
 
 // Manejo de errores 500
 app.use((err, req, res, next) => {
-    res.status(500).render('500', { title: 'Error del servidor' });
+    console.error('❌ ERROR 500:', err.message);
+    console.error(err.stack);
+    res.status(500).send('<pre>' + err.stack + '</pre>');
 });
 
 // Puerto

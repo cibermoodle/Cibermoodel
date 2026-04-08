@@ -1,0 +1,174 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div style="padding: 30px; max-width: 1400px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #333; margin: 0 0 10px 0; font-size: 32px;">📚 Banco de Preguntas</h1>
+        <p style="color: #999; margin: 0; font-size: 14px;">Crea y reutiliza preguntas en múltiples tests</p>
+    </div>
+
+    <!-- Barra de herramientas -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+        <!-- Búsqueda y filtros -->
+        <div style="display: flex; gap: 10px; flex: 1; min-width: 300px;">
+            <input type="text" id="searchInput" placeholder="Buscar preguntas..." style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+            
+            <select id="categoryFilter" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <option value="">Todas las categorías</option>
+                <% categorias.forEach(cat => { %>
+                    <option value="<%= cat.categoria %>"><%= cat.categoria %></option>
+                <% }) %>
+            </select>
+
+            <select id="difficultyFilter" style="padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <option value="">Todas las dificultades</option>
+                <option value="fácil">Fácil</option>
+                <option value="media">Media</option>
+                <option value="difícil">Difícil</option>
+            </select>
+        </div>
+
+        <!-- Botón crear -->
+        <a href="/profesor/banco-preguntas/crear" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+            ➕ Nueva pregunta
+        </a>
+    </div>
+
+    <!-- Lista de preguntas -->
+    <div id="preguntasContainer" style="display: grid; gap: 15px;">
+        <% if (preguntas.length === 0) { %>
+            <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+                <p style="color: #999; font-size: 16px; margin: 0;">
+                    📋 No hay preguntas en el banco
+                </p>
+                <p style="color: #bbb; font-size: 14px; margin: 10px 0 0 0;">
+                    Crea tu primera pregunta para comenzar
+                </p>
+                <a href="/profesor/banco-preguntas/crear" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                    ➕ Crear pregunta
+                </a>
+            </div>
+        <% } else { %>
+            <% preguntas.forEach((pregunta) => { %>
+                <div class="pregunta-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #667eea;">
+                    <!-- Encabezado -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">
+                                <%= pregunta.enunciado.substring(0, 100) %><% if (pregunta.enunciado.length > 100) { %>...<% } %>
+                            </h3>
+                            
+                            <!-- Metadatos -->
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                                <% if (pregunta.categoria) { %>
+                                    <span style="background: #e8eaf6; color: #667eea; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                        📁 <%= pregunta.categoria %>
+                                    </span>
+                                <% } %>
+                                
+                                <span style="background: <% 
+                                    if (pregunta.dificultad === 'fácil') { %>
+                                        #d4edda<% 
+                                    } else if (pregunta.dificultad === 'media') { %>
+                                        #fff3cd<% 
+                                    } else { %>
+                                        #f8d7da<% 
+                                    } %>; color: <% 
+                                    if (pregunta.dificultad === 'fácil') { %>
+                                        #155724<% 
+                                    } else if (pregunta.dificultad === 'media') { %>
+                                        #856404<% 
+                                    } else { %>
+                                        #721c24<% 
+                                    } %>; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                    <% if (pregunta.dificultad === 'fácil') { %>⭐<% } else if (pregunta.dificultad === 'media') { %>⭐⭐<% } else { %>⭐⭐⭐<% } %> <%= pregunta.dificultad %>
+                                </span>
+                                
+                                <span style="color: #999; font-size: 12px;">
+                                    <%= pregunta.num_opciones %> opciones
+                                </span>
+                                
+                                <span style="color: #999; font-size: 12px;">
+                                    Usado en <%= pregunta.num_tests %> test<%= pregunta.num_tests !== 1 ? 's' : '' %>
+                                </span>
+                            </div>
+
+                            <!-- Preview de opciones -->
+                            <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #666;">
+                                <div style="font-weight: bold; margin-bottom: 8px;">Opciones:</div>
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <% 
+                                    const preguntasOpciones = [];
+                                    // Simulamos que cada pregunta tiene opciones (en la práctica vendrían de una JOIN en la BD)
+                                    %>
+                                    A) Opción A<br>
+                                    B) Opción B<br>
+                                    C) Opción C<br>
+                                    D) Opción D
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; white-space: nowrap;">
+                            <a href="/profesor/banco-preguntas/editar/<%= pregunta.banco_pregunta_id %>" style="padding: 8px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; text-align: center; font-size: 13px; font-weight: bold;">
+                                ✏️ Editar
+                            </a>
+                            <form action="/profesor/banco-preguntas/eliminar/<%= pregunta.banco_pregunta_id %>" method="POST" style="margin: 0;" onsubmit="return confirm('¿Estás seguro?');">
+                                <button type="submit" style="width: 100%; padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;">
+                                    🗑️ Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Fecha de creación -->
+                    <div style="border-top: 1px solid #eee; padding-top: 12px;">
+                        <small style="color: #999;">
+                            Creada: <%= new Date(pregunta.created_at).toLocaleDateString('es-ES') %>
+                        </small>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    // Búsqueda y filtros
+    document.getElementById('searchInput').addEventListener('input', filtrar);
+    document.getElementById('categoryFilter').addEventListener('change', filtrar);
+    document.getElementById('difficultyFilter').addEventListener('change', filtrar);
+
+    function filtrar() {
+        const q = document.getElementById('searchInput').value;
+        const categoria = document.getElementById('categoryFilter').value;
+        const dificultad = document.getElementById('difficultyFilter').value;
+
+        const params = new URLSearchParams();
+        if (q) params.append('q', q);
+        if (categoria) params.append('categoria', categoria);
+        if (dificultad) params.append('dificultad', dificultad);
+
+        fetch(`/profesor/banco-preguntas/buscar?${params}`)
+            .then(res => res.json())
+            .then(preguntas => {
+                const container = document.getElementById('preguntasContainer');
+                
+                if (preguntas.length === 0) {
+                    container.innerHTML = `
+                        <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+                            <p style="color: #999; font-size: 16px; margin: 0;">
+                                ❌ No hay preguntas que coincidan con los criterios
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Aquí iría la renderización dinámica de preguntas
+                // Por ahora, recargar la página es más simple
+                // En producción, usar template dinámico
+            });
+    }
+</script>

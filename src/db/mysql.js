@@ -7,4 +7,5 @@ const pool = mysql.createPool({
     database: "plataforma_educativa",
 })
 
-module.exports = pool;const mysql = require('mysql2/promise');
+module.exports = pool;
+
