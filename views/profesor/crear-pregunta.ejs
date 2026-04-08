@@ -1,0 +1,187 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div style="padding: 30px; max-width: 800px; margin: 0 auto;">
+    <!-- Header -->
+    <h1 style="color: #333; margin: 0 0 10px 0;"><%= pregunta ? '✏️ Editar pregunta' : '➕ Nueva pregunta' %></h1>
+    <p style="color: #999; margin: 0 0 25px 0;">Completa los campos para <% if (pregunta) { %>actualizar<% } else { %>crear<% } %> una pregunta</p>
+
+    <!-- Errores -->
+    <% if (error) { %>
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <!-- Formulario -->
+    <form method="POST" style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        
+        <!-- Enunciado -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                Enunciado de la pregunta *
+            </label>
+            <textarea name="enunciado" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-height: 100px; resize: vertical;"><%= pregunta ? pregunta.enunciado : '' %></textarea>
+        </div>
+
+        <!-- Tipo de pregunta -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                Tipo de pregunta
+            </label>
+            <select name="tipo_pregunta" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <option value="opcion_multiple" <%= pregunta?.tipo_pregunta === 'opcion_multiple' ? 'selected' : '' %>>Opción múltiple</option>
+                <option value="verdadero_falso" <%= pregunta?.tipo_pregunta === 'verdadero_falso' ? 'selected' : '' %>>Verdadero/Falso</option>
+                <option value="respuesta_corta" <%= pregunta?.tipo_pregunta === 'respuesta_corta' ? 'selected' : '' %>>Respuesta corta</option>
+            </select>
+        </div>
+
+        <!-- Categoría -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                Categoría
+            </label>
+            <input type="text" name="categoria" placeholder="Ej: Álgebra, Historia, Gramática" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" value="<%= pregunta?.categoria || '' %>">
+        </div>
+
+        <!-- Dificultad -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                Nivel de dificultad
+            </label>
+            <div style="display: flex; gap: 15px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="dificultad" value="fácil" <%= !pregunta || pregunta.dificultad === 'fácil' ? 'checked' : '' %> style="cursor: pointer;">
+                    <span>⭐ Fácil</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="dificultad" value="media" <%= pregunta?.dificultad === 'media' ? 'checked' : '' %> style="cursor: pointer;">
+                    <span>⭐⭐ Media</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="dificultad" value="difícil" <%= pregunta?.dificultad === 'difícil' ? 'checked' : '' %> style="cursor: pointer;">
+                    <span>⭐⭐⭐ Difícil</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Opciones -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 12px; font-weight: bold; color: #333;">
+                Opciones de respuesta
+            </label>
+            <div id="opcionesContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                <% 
+                const letras = ['A', 'B', 'C', 'D'];
+                if (opciones && opciones.length > 0) {
+                    opciones.forEach((opcion, index) => { 
+                %>
+                    <div class="opcion" style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-weight: bold; color: #667eea; min-width: 25px;"><%= letras[index] %></span>
+                        <input type="text" name="opciones[<%= index %>][texto]" placeholder="Opción <%= letras[index] %>" value="<%= opcion.texto %>" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;">
+                            <input type="checkbox" name="opciones[<%= index %>][es_correcta]" <%= opcion.es_correcta ? 'checked' : '' %> style="cursor: pointer;">
+                            ✅ Correcta
+                        </label>
+                        <button type="button" class="btn-eliminar-opcion" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                            ✕
+                        </button>
+                    </div>
+                <% 
+                    });
+                } else {
+                    // Mostrar 4 opciones vacías por defecto
+                    for (let i = 0; i < 4; i++) { 
+                %>
+                    <div class="opcion" style="display: flex; gap: 10px; align-items: center;">
+                        <span style="font-weight: bold; color: #667eea; min-width: 25px;"><%= letras[i] %></span>
+                        <input type="text" name="opciones[<%= i %>][texto]" placeholder="Opción <%= letras[i] %>" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;">
+                            <input type="checkbox" name="opciones[<%= i %>][es_correcta]" style="cursor: pointer;">
+                            ✅ Correcta
+                        </label>
+                        <button type="button" class="btn-eliminar-opcion" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; display: none;">
+                            ✕
+                        </button>
+                    </div>
+                <% 
+                    }
+                } 
+                %>
+            </div>
+            <button type="button" id="btnAgregarOpcion" style="margin-top: 10px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                ➕ Agregar opción
+            </button>
+        </div>
+
+        <!-- Feedback -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #333;">
+                Feedback (explicación opcional)
+            </label>
+            <textarea name="feedback" placeholder="Proporciona una explicación de la respuesta correcta" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-height: 80px; resize: vertical;"><%= pregunta?.feedback || '' %></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div style="display: flex; gap: 10px; margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
+            <button type="submit" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;">
+                <% if (pregunta) { %>💾 Guardar cambios<% } else { %>➕ Crear pregunta<% } %>
+            </button>
+            <a href="/profesor/banco-preguntas" style="display: flex; align-items: center; padding: 12px 20px; background: #999; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                ← Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    let opcioContador = <%= (opciones?.length || 4) %>;
+    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+    // Agregar opción
+    document.getElementById('btnAgregarOpcion').addEventListener('click', function() {
+        if (opcioContador >= 8) {
+            alert('Máximo 8 opciones');
+            return;
+        }
+
+        const container = document.getElementById('opcionesContainer');
+        const div = document.createElement('div');
+        div.className = 'opcion';
+        div.style.cssText = 'display: flex; gap: 10px; align-items: center;';
+        div.innerHTML = `
+            <span style="font-weight: bold; color: #667eea; min-width: 25px;">${letras[opcioContador]}</span>
+            <input type="text" name="opciones[${opcioContador}][texto]" placeholder="Opción ${letras[opcioContador]}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer;">
+                <input type="checkbox" name="opciones[${opcioContador}][es_correcta]" style="cursor: pointer;">
+                ✅ Correcta
+            </label>
+            <button type="button" class="btn-eliminar-opcion" style="padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                ✕
+            </button>
+        `;
+        container.appendChild(div);
+        
+        div.querySelector('.btn-eliminar-opcion').addEventListener('click', function() {
+            div.remove();
+        });
+
+        opcioContador++;
+    });
+
+    // Eliminar opción (botones por defecto)
+    document.querySelectorAll('.btn-eliminar-opcion').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.opcion').remove();
+        });
+    });
+
+    // Validar al menos una opción correcta
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const inputsCorrectos = document.querySelectorAll('input[name*="[es_correcta]"]:checked');
+        if (inputsCorrectos.length === 0) {
+            e.preventDefault();
+            alert('Debes marcar al menos una opción como correcta');
+            return false;
+        }
+    });
+</script>

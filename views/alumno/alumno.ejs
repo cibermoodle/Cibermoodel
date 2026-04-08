@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo">Mis clases</h2>
+    <a href="/alumno/unirse" class="btn-nueva-clase">➕ Unirse a una clase</a>
+</div>
+
+<% if (clases.length === 0) { %>
+    <div class="clases-vacio">
+        <div class="icono">📚</div>
+        <p>Aún no estás registrado en ninguna clase.</p>
+        <a href="/alumno/unirse" class="btn-nueva-clase">➕ Unirse a una clase</a>
+    </div>
+<% } else { %>
+    <div class="clases-grid">
+        <% clases.forEach(clase => { %>
+        <div class="clase-card" data-id="<%= clase.clase_id %>">
+            <div class="clase-card-banner">
+                <p class="clase-card-banner-titulo"><%= clase.nombre %></p>
+                <a href="/alumno/clase/<%= clase.clase_id %>" class="btn-editar-card">👥 Ver detalles</a>
+            </div>
+            <div class="clase-card-acciones">
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+                    Tareas
+                </a>
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    Foro
+                </a>
+                <a href="#" class="accion-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Calificaciones
+                </a>
+            </div>
+            <div class="clase-card-footer">
+                <span>📄 <%= clase.descripcion ? clase.descripcion.substring(0, 30) + '...' : 'Sin descripción' %></span>
+                <span>👨‍🏫 <%= clase.profesor_nombre %> <%= clase.profesor_apellidos %></span>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+<% } %>
+
+<style>
+    .accion-item {
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .btn-editar-card {
+        text-decoration: none;
+        color: white;
+    }
+</style>

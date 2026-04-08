@@ -148,3 +148,48 @@ exports.eliminarClase = async (req, res) => {
         res.status(500).json({ ok: false });
     }
 };
+
+// GET /profesor/registrados/:id - Ver alumnos registrados en una clase
+exports.verAlumnosClase = async (req, res) => {
+    try {
+        const clase_id = req.params.id;
+        const profesor_id = 1; // Cambiar por sesión real
+        
+        // Verificar que la clase pertenece al profesor
+        const [claseCheck] = await pool.query(
+            'SELECT * FROM clase WHERE clase_id = ? AND profesor_id = ?',
+            [clase_id, profesor_id]
+        );
+        
+        if (claseCheck.length === 0) {
+            return res.status(403).render('404', { title: 'No autorizado' });
+        }
+        
+        // Obtener la clase
+        const [clase] = await pool.query(
+            'SELECT * FROM clase WHERE clase_id = ?',
+            [clase_id]
+        );
+        
+        // Obtener alumnos registrados
+        const [alumnos] = await pool.query(
+            `SELECT u.usuario_id, u.nombre, u.apellidos, u.email, ca.fecha_union
+             FROM clase_alumno ca
+             JOIN alumno a ON ca.alumno_id = a.alumno_id
+             JOIN usuario u ON a.usuario_id = u.usuario_id
+             WHERE ca.clase_id = ?
+             ORDER BY ca.fecha_union DESC`,
+            [clase_id]
+        );
+        
+        res.render('profesor/alumnosClase', {
+            clase: clase[0],
+            alumnos,
+            title: 'Alumnos de ' + clase[0].nombre,
+            paginaActual: 'profesor'
+        });
+    } catch (err) {
+        console.error('❌ ERROR:', err.message);
+        res.status(500).render('500', { title: 'Error del servidor' });
+    }
+};

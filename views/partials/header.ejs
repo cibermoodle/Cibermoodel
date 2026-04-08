@@ -31,13 +31,13 @@
 
   <!-- NAVEGACIÓN -->
   <nav class="nav-area">
-    <a href="/dashboard"  class="nav-link <%= paginaActual === 'dashboard'  ? 'active' : '' %>">Área personal</a>
     <a href="/cursos"     class="nav-link <%= paginaActual === 'cursos'     ? 'active' : '' %>">Mis cursos</a>
     <a href="/tareas"     class="nav-link <%= paginaActual === 'tareas'     ? 'active' : '' %>">Tareas</a>
     <a href="/proyectos"  class="nav-link <%= paginaActual === 'proyectos'  ? 'active' : '' %>">Proyectos</a>
     <a href="/calendario" class="nav-link <%= paginaActual === 'calendario' ? 'active' : '' %>">Calendario</a>
     <% if (user && user.rol === 'profesor') { %>
     <a href="/mis-clases" class="nav-link nav-link--teacher <%= paginaActual === 'mis-clases' ? 'active' : '' %>">Mis clases</a>
+    <a href="/profesor/banco-preguntas" class="nav-link nav-link--teacher <%= paginaActual === 'banco-preguntas' ? 'active' : '' %>">📚 Banco Preguntas</a>
     <% } %>
   </nav>
 
