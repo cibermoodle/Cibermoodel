@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Cibermoodel</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f3f7ff 0%, #eef7f0 100%);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border: 1px solid #e8edf3;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 55px rgba(21, 40, 72, 0.12);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      color: #1b2a41;
+    }
+    p {
+      margin: 0 0 20px;
+      color: #4c5a6e;
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: #2e3b4e;
+      margin: 10px 0 6px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      border: 1px solid #cdd8e6;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    input:focus {
+      border-color: #2f6fe4;
+      box-shadow: 0 0 0 3px rgba(47, 111, 228, 0.15);
+    }
+    .error {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #ffc9c9;
+      background: #fff5f5;
+      color: #bf1f2f;
+      font-size: 13px;
+    }
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      background: #2f6fe4;
+      color: #fff;
+      padding: 12px;
+      margin-top: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #245bc0;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Iniciar sesion</h1>
+    <p>Accede con tu cuenta de Cibermoodel.</p>
+
+    <% if (error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+
+    <form action="/login" method="POST">
+      <label for="email">Correo</label>
+      <input id="email" type="email" name="email" required>
+
+      <label for="password">Contrasena</label>
+      <input id="password" type="password" name="password" required>
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

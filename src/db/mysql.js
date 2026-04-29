@@ -5,6 +5,6 @@ const pool = mysql.createPool({
     user: "root",
     password: "ceti",
     database: "plataforma_educativa",
-})
+});
 
-module.exports = pool;const mysql = require('mysql2/promise');
+module.exports = pool;

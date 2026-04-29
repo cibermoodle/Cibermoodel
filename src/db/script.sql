@@ -331,7 +331,7 @@ DO
 
 INSERT INTO usuario (nombre, apellidos, email, password_hash, rol) VALUES
 -- Profesores
-('Carlos',  'García López',    'carlos.garcia@escuela.com',   '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
+('Carlos',  'García López',    'carlosgarcia@escuela.com',   '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
 ('Laura',   'Martínez Ruiz',   'laura.martinez@escuela.com',  '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
 ('Sergio',  'Fernández Mora',  'sergio.fernandez@escuela.com','9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'profesor'),
 -- Alumnos
@@ -339,7 +339,7 @@ INSERT INTO usuario (nombre, apellidos, email, password_hash, rol) VALUES
 ('Pablo',   'Ramírez Torres',  'pablo.ramirez@alumno.com',    '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'alumno'),
 ('Marta',   'Jiménez Vega',    'marta.jimenez@alumno.com',    '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'alumno'),
 -- Admin
-('Admin',   'Sistema',         'admin@escuela.com',           '9250e222c4c71f0c58d4c54b50a880a312e9f9fed55d5c3aa0b0e860ded99165', 'admin');
+('Admin',   'Sistema',         'admin@escuela.com',           'Admin', 'admin');
 
 -- =====================================================
 -- PROFESORES
