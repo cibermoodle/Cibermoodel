@@ -155,6 +155,47 @@ app.get('/admin', requireAuth, requireRole('admin'), (req, res) => {
     res.render('admin/dashboard', { title: 'Panel Admin', paginaActual: 'admin' });
 });
 
+app.get('/admin/crear-alumno', requireAuth, requireRole('admin'), (req, res) => {
+    res.render('admin/crear-alumno', { title: 'Crear Alumno', paginaActual: 'admin', error: null, exito: null, datos: {} });
+});
+
+app.post('/admin/crear-alumno', requireAuth, requireRole('admin'), async (req, res) => {
+    const { nombre, apellidos, email, password, fecha_nacimiento } = req.body;
+    const render = (error, exito, datos) =>
+        res.render('admin/crear-alumno', { title: 'Crear Alumno', paginaActual: 'admin', error, exito, datos: datos || req.body });
+
+    if (!nombre || !apellidos || !email || !password) {
+        return render('Todos los campos obligatorios deben estar completos.', null);
+    }
+    if (password.length < 6) {
+        return render('La contrasena debe tener al menos 6 caracteres.', null);
+    }
+
+    const db = require('./db/mysql');
+    try {
+        const [existe] = await db.query('SELECT usuario_id FROM usuario WHERE email = ? LIMIT 1', [email]);
+        if (existe.length > 0) {
+            return render('Ya existe un usuario con ese correo electronico.', null);
+        }
+
+        const hash = await bcrypt.hash(password, 10);
+        const [result] = await db.query(
+            'INSERT INTO usuario (nombre, apellidos, email, password_hash, rol) VALUES (?, ?, ?, ?, ?)',
+            [nombre.trim(), apellidos.trim(), email.trim().toLowerCase(), hash, 'alumno']
+        );
+        const usuarioId = result.insertId;
+
+        await db.query(
+            'INSERT INTO alumno (usuario_id, fecha_nacimiento) VALUES (?, ?)',
+            [usuarioId, fecha_nacimiento || null]
+        );
+
+        return render(null, `Alumno "${nombre} ${apellidos}" creado correctamente.`, {});
+    } catch (err) {
+        return render('Error al crear el alumno. Intentalo de nuevo.', null);
+    }
+});
+
 // Manejo de errores 404
 app.use((req, res) => {
     res.status(404).render('404', { title: 'Página no encontrada' });
