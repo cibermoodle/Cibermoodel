@@ -67,7 +67,11 @@ app.use((req, res, next) => {
 
 // Inicio
 app.get('/', (req, res) => {
-    return res.redirect('/login');
+    if (!req.session || !req.session.user) {
+        return res.redirect('/login');
+    }
+
+    return res.render('index', { title: 'Home', paginaActual: 'home' });
 });
 
 // Auth
