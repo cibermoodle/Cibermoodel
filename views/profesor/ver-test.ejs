@@ -1,0 +1,70 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">👁️ <%= test.titulo %></h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Descripción:</strong></p>
+                            <p><%= test.descripcion || 'Sin descripción' %></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Duración:</strong> <%= test.duracion_min %> minutos</p>
+                            <p><strong>Estado:</strong> 
+                                <% if (test.activo === 'activa') { %>
+                                    <span class="badge bg-success">Activo</span>
+                                <% } else { %>
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                <% } %>
+                            </p>
+                            <% if (test.start_at) { %>
+                                <p><strong>Inicia:</strong> <%= new Date(test.start_at).toLocaleString() %></p>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Preguntas -->
+                    <h5>📝 Preguntas (<%= preguntas.length %>)</h5>
+                    
+                    <% if (preguntas.length === 0) { %>
+                        <div class="alert alert-warning">
+                            Este test no tiene preguntas aún.
+                        </div>
+                    <% } else { %>
+                        <div class="list-group">
+                            <% preguntas.forEach((preg, index) => { %>
+                                <div class="list-group-item">
+                                    <div class="mb-2">
+                                        <strong><%= index + 1 %>. <%= preg.enunciado %></strong>
+                                    </div>
+                                    
+                                    <% if (preg.feedback) { %>
+                                        <div class="alert alert-light mb-2">
+                                            💡 <strong>Retroalimentación:</strong> <%= preg.feedback %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <a href="/profesor/tests/editar/<%= test.test_id %>" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="/profesor/tests" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

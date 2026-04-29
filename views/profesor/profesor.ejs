@@ -2,7 +2,15 @@
 
 <div class="prof-header">
     <h2 class="prof-titulo">Vista de clases</h2>
-    <a href="/profesor/crearclase" class="btn-nueva-clase">＋ Nueva clase</a>
+    <div style="display: flex; gap: 10px;">
+        <a href="/profesor/tests" class="btn-nueva-clase" style="background: #667eea;">
+            📋 Mis Tests
+        </a>
+        <a href="/profesor/banco-preguntas" class="btn-nueva-clase" style="background: #5cb85c;">
+            📚 Banco de Preguntas
+        </a>
+        <a href="/profesor/crearclase" class="btn-nueva-clase">＋ Nueva clase</a>
+    </div>
 </div>
 
 <% if (clases.length === 0) { %>
