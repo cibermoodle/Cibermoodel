@@ -152,7 +152,7 @@ app.get('/profesor', requireAuth, requireRole('profesor'), (req, res) => {
 });
 
 app.get('/admin', requireAuth, requireRole('admin'), (req, res) => {
-    res.send('Panel admin habilitado.');
+    res.render('admin/dashboard', { title: 'Panel Admin', paginaActual: 'admin' });
 });
 
 // Manejo de errores 404
