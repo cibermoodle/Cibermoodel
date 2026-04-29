@@ -1,50 +1,39 @@
-const pool = require('../../src/db/mysql');
+const pool = require('../../src/db/mysql'); // Rectificada la ruta según tu estructura
 
-// GET /profesor/banco-preguntas - Ver todas las preguntas del banco
+// GET /profesor/banco-preguntas - Ver todas las preguntas del banco (reutilizables)
 exports.verBanco = async (req, res) => {
     console.log('✅ Entrando a banco de preguntas');
     try {
-        const profesor_id = 1; // Cambiar por sesión real
-        
+        // Obtener todas las preguntas sin test asignado (preguntas reutilizables)
+        // Usamos COUNT(DISTINCT ...) para evitar duplicados en el conteo por los JOINs
         const [preguntas] = await pool.query(
-            `SELECT bp.*, 
-                    COUNT(bpo.banco_opcion_id) as num_opciones,
-                    COUNT(tbp.test_banco_id) as num_tests
-             FROM banco_pregunta bp
-             LEFT JOIN banco_pregunta_opcion bpo ON bp.banco_pregunta_id = bpo.banco_pregunta_id
-             LEFT JOIN test_banco_pregunta tbp ON bp.banco_pregunta_id = tbp.banco_pregunta_id
-             WHERE bp.profesor_id = ?
-             GROUP BY bp.banco_pregunta_id
-             ORDER BY bp.created_at DESC`,
-            [profesor_id]
-        );
-
-        // Obtener categorías
-        const [categorias] = await pool.query(
-            `SELECT DISTINCT categoria FROM banco_pregunta 
-             WHERE profesor_id = ? AND categoria IS NOT NULL
-             ORDER BY categoria`,
-            [profesor_id]
+            `SELECT p.pregunta_id, p.enunciado, p.feedback, p.orden,
+                    COUNT(DISTINCT o.opcion_id) as num_opciones,
+                    COUNT(DISTINCT r.respuesta_id) as num_respuestas
+             FROM pregunta p
+             LEFT JOIN opcion o ON p.pregunta_id = o.pregunta_id
+             LEFT JOIN respuesta r ON p.pregunta_id = r.pregunta_id
+             WHERE p.test_id IS NULL
+             GROUP BY p.pregunta_id
+             ORDER BY p.pregunta_id DESC`
         );
 
         res.render('profesor/banco-preguntas', {
             preguntas,
-            categorias,
-            title: 'Banco de Preguntas',
+            title: 'Banco de Preguntas Reutilizable',
             paginaActual: 'banco-preguntas'
         });
     } catch (err) {
         console.error('❌ ERROR:', err.message);
         res.render('profesor/banco-preguntas', {
             preguntas: [],
-            categorias: [],
-            title: 'Banco de Preguntas',
+            title: 'Banco de Preguntas Reutilizable',
             paginaActual: 'banco-preguntas'
         });
     }
 };
 
-// GET /profesor/banco-preguntas/crear - Mostrar formulario para crear pregunta
+// GET /profesor/banco-preguntas/crear - Mostrar formulario
 exports.mostrarCrear = (req, res) => {
     res.render('profesor/crear-pregunta', {
         pregunta: null,
@@ -58,39 +47,31 @@ exports.mostrarCrear = (req, res) => {
 
 // POST /profesor/banco-preguntas/crear - Guardar nueva pregunta
 exports.crearPregunta = async (req, res) => {
-    const { enunciado, tipo_pregunta, categoria, dificultad, feedback, opciones } = req.body;
-    const profesor_id = 1;
+    const { enunciado, feedback, opciones_json } = req.body;
 
     try {
         if (!enunciado || enunciado.trim() === '') {
-            return res.render('profesor/crear-pregunta', {
-                pregunta: null,
-                opciones: [],
-                error: 'El enunciado es obligatorio.',
-                success: null,
-                title: 'Crear Pregunta',
-                paginaActual: 'banco-preguntas'
-            });
+            throw new Error('El enunciado es obligatorio.');
         }
 
-        // Insertar pregunta
+        // Insertar pregunta con test_id NULL explícito
         const [result] = await pool.query(
-            `INSERT INTO banco_pregunta (profesor_id, enunciado, tipo_pregunta, categoria, dificultad, feedback)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [profesor_id, enunciado, tipo_pregunta || 'opcion_multiple', categoria || null, dificultad || 'media', feedback || null]
+            `INSERT INTO pregunta (test_id, enunciado, feedback, orden)
+             VALUES (NULL, ?, ?, 0)`,
+            [enunciado, feedback || null]
         );
 
-        const banco_pregunta_id = result.insertId;
+        const pregunta_id = result.insertId;
 
-        // Insertar opciones si existen
-        if (opciones && Array.isArray(opciones)) {
+        if (opciones_json) {
+            const opciones = JSON.parse(opciones_json);
             for (let i = 0; i < opciones.length; i++) {
                 const opcion = opciones[i];
                 if (opcion.texto && opcion.texto.trim() !== '') {
                     await pool.query(
-                        `INSERT INTO banco_pregunta_opcion (banco_pregunta_id, texto, es_correcta, letra, orden)
-                         VALUES (?, ?, ?, ?, ?)`,
-                        [banco_pregunta_id, opcion.texto, opcion.es_correcta ? 1 : 0, String.fromCharCode(65 + i), i]
+                        `INSERT INTO opcion (pregunta_id, texto, es_correcta, letra)
+                         VALUES (?, ?, ?, ?)`,
+                        [pregunta_id, opcion.texto, opcion.es_correcta ? 1 : 0, String.fromCharCode(65 + i)]
                     );
                 }
             }
@@ -98,11 +79,11 @@ exports.crearPregunta = async (req, res) => {
 
         res.redirect('/profesor/banco-preguntas');
     } catch (err) {
-        console.error('❌ ERROR:', err.message);
+        console.error('Error al crear:', err);
         res.render('profesor/crear-pregunta', {
             pregunta: null,
             opciones: [],
-            error: 'Error al crear la pregunta.',
+            error: err.message,
             success: null,
             title: 'Crear Pregunta',
             paginaActual: 'banco-preguntas'
@@ -110,25 +91,13 @@ exports.crearPregunta = async (req, res) => {
     }
 };
 
-// GET /profesor/banco-preguntas/editar/:id - Mostrar formulario para editar
+// GET /profesor/banco-preguntas/editar/:id
 exports.mostrarEditar = async (req, res) => {
     try {
-        const profesor_id = 1;
-        const { id } = req.params;
+        const [preguntas] = await pool.query('SELECT * FROM pregunta WHERE pregunta_id = ?', [req.params.id]);
+        if (preguntas.length === 0) return res.redirect('/profesor/banco-preguntas');
 
-        const [preguntas] = await pool.query(
-            `SELECT * FROM banco_pregunta WHERE banco_pregunta_id = ? AND profesor_id = ?`,
-            [id, profesor_id]
-        );
-
-        if (preguntas.length === 0) {
-            return res.status(404).render('404', { title: 'No encontrada' });
-        }
-
-        const [opciones] = await pool.query(
-            `SELECT * FROM banco_pregunta_opcion WHERE banco_pregunta_id = ? ORDER BY orden`,
-            [id]
-        );
+        const [opciones] = await pool.query('SELECT * FROM opcion WHERE pregunta_id = ? ORDER BY letra ASC', [req.params.id]);
 
         res.render('profesor/crear-pregunta', {
             pregunta: preguntas[0],
@@ -139,129 +108,101 @@ exports.mostrarEditar = async (req, res) => {
             paginaActual: 'banco-preguntas'
         });
     } catch (err) {
-        console.error('❌ ERROR:', err.message);
-        res.status(500).render('500', { title: 'Error' });
+        res.redirect('/profesor/banco-preguntas');
     }
 };
 
-// POST /profesor/banco-preguntas/editar/:id - Guardar cambios
+// POST /profesor/banco-preguntas/editar/:id
 exports.editarPregunta = async (req, res) => {
-    const { id } = req.params;
-    const { enunciado, tipo_pregunta, categoria, dificultad, feedback, opciones } = req.body;
-    const profesor_id = 1;
+    const { enunciado, feedback, opciones_json } = req.body;
+    const pregunta_id = req.params.id;
 
     try {
-        // Verificar que pertenece al profesor
-        const [preguntas] = await pool.query(
-            `SELECT * FROM banco_pregunta WHERE banco_pregunta_id = ? AND profesor_id = ?`,
-            [id, profesor_id]
-        );
+        await pool.query('UPDATE pregunta SET enunciado=?, feedback=? WHERE pregunta_id=?', [enunciado, feedback || null, pregunta_id]);
+        await pool.query('DELETE FROM opcion WHERE pregunta_id = ?', [pregunta_id]);
 
-        if (preguntas.length === 0) {
-            return res.status(404).render('404', { title: 'No encontrada' });
-        }
-
-        // Actualizar pregunta
-        await pool.query(
-            `UPDATE banco_pregunta SET enunciado = ?, tipo_pregunta = ?, categoria = ?, dificultad = ?, feedback = ?
-             WHERE banco_pregunta_id = ?`,
-            [enunciado, tipo_pregunta, categoria || null, dificultad, feedback || null, id]
-        );
-
-        // Eliminar opciones antiguas
-        await pool.query(
-            `DELETE FROM banco_pregunta_opcion WHERE banco_pregunta_id = ?`,
-            [id]
-        );
-
-        // Insertar nuevas opciones
-        if (opciones && Array.isArray(opciones)) {
+        if (opciones_json) {
+            const opciones = JSON.parse(opciones_json);
             for (let i = 0; i < opciones.length; i++) {
-                const opcion = opciones[i];
-                if (opcion.texto && opcion.texto.trim() !== '') {
+                if (opciones[i].texto) {
                     await pool.query(
-                        `INSERT INTO banco_pregunta_opcion (banco_pregunta_id, texto, es_correcta, letra, orden)
-                         VALUES (?, ?, ?, ?, ?)`,
-                        [id, opcion.texto, opcion.es_correcta ? 1 : 0, String.fromCharCode(65 + i), i]
+                        'INSERT INTO opcion (pregunta_id, texto, es_correcta, letra) VALUES (?, ?, ?, ?)',
+                        [pregunta_id, opciones[i].texto, opciones[i].es_correcta ? 1 : 0, String.fromCharCode(65 + i)]
                     );
                 }
             }
         }
-
         res.redirect('/profesor/banco-preguntas');
     } catch (err) {
-        console.error('❌ ERROR:', err.message);
-        res.status(500).render('500', { title: 'Error' });
+        console.error(err);
+        res.status(500).send("Error al actualizar");
     }
 };
 
-// POST /profesor/banco-preguntas/eliminar/:id - Eliminar pregunta
+// POST /profesor/banco-preguntas/eliminar/:id
 exports.eliminarPregunta = async (req, res) => {
     try {
-        const profesor_id = 1;
-        const { id } = req.params;
-
-        // Verificar que pertenece al profesor
-        const [preguntas] = await pool.query(
-            `SELECT * FROM banco_pregunta WHERE banco_pregunta_id = ? AND profesor_id = ?`,
-            [id, profesor_id]
-        );
-
-        if (preguntas.length === 0) {
-            return res.status(404).json({ error: 'Pregunta no encontrada' });
-        }
-
-        // Eliminar pregunta (las opciones se eliminan en cascada)
-        await pool.query(
-            `DELETE FROM banco_pregunta WHERE banco_pregunta_id = ?`,
-            [id]
-        );
-
-        res.redirect('/profesor/banco-preguntas');
+        const id = req.params.id;
+        await pool.query('DELETE FROM respuesta WHERE pregunta_id = ?', [id]);
+        await pool.query('DELETE FROM opcion WHERE pregunta_id = ?', [id]);
+        await pool.query('DELETE FROM pregunta WHERE pregunta_id = ?', [id]);
+        res.json({ ok: true });
     } catch (err) {
-        console.error('❌ ERROR:', err.message);
-        res.status(500).json({ error: 'Error al eliminar' });
+        res.status(500).json({ ok: false });
     }
 };
 
-// GET /profesor/banco-preguntas/buscar - Buscar/filtrar preguntas
+// GET /profesor/banco-preguntas/buscar - Para el modal de selección
 exports.buscar = async (req, res) => {
     try {
-        const profesor_id = 1;
-        const { q, categoria, dificultad } = req.query;
+        const { q } = req.query;
+        let sql = "SELECT * FROM pregunta WHERE test_id IS NULL";
+        let params = [];
 
-        let query = `SELECT bp.*, 
-                           COUNT(bpo.banco_opcion_id) as num_opciones,
-                           COUNT(tbp.test_banco_id) as num_tests
-                    FROM banco_pregunta bp
-                    LEFT JOIN banco_pregunta_opcion bpo ON bp.banco_pregunta_id = bpo.banco_pregunta_id
-                    LEFT JOIN test_banco_pregunta tbp ON bp.banco_pregunta_id = tbp.banco_pregunta_id
-                    WHERE bp.profesor_id = ?`;
-        
-        const params = [profesor_id];
-
-        if (q && q.trim() !== '') {
-            query += ` AND bp.enunciado LIKE ?`;
+        if (q) {
+            sql += " AND enunciado LIKE ?";
             params.push(`%${q}%`);
         }
 
-        if (categoria && categoria.trim() !== '') {
-            query += ` AND bp.categoria = ?`;
-            params.push(categoria);
-        }
-
-        if (dificultad && dificultad.trim() !== '') {
-            query += ` AND bp.dificultad = ?`;
-            params.push(dificultad);
-        }
-
-        query += ` GROUP BY bp.banco_pregunta_id ORDER BY bp.created_at DESC`;
-
-        const [preguntas] = await pool.query(query, params);
-
+        const [preguntas] = await pool.query(sql, params);
         res.json(preguntas);
     } catch (err) {
-        console.error('❌ ERROR:', err.message);
-        res.status(500).json({ error: 'Error en la búsqueda' });
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// NUEVA FUNCIÓN RECTIFICADA: Vincular/Clonar del banco al test
+exports.vincularPreguntas = async (req, res) => {
+    const { test_id, pregunta_ids } = req.body;
+
+    try {
+        if (!test_id || !pregunta_ids) throw new Error("Datos insuficientes");
+
+        for (let id of pregunta_ids) {
+            // 1. Obtener la pregunta original
+            const [pregRows] = await pool.query('SELECT * FROM pregunta WHERE pregunta_id = ?', [id]);
+            const p = pregRows[0];
+
+            // 2. Crear la copia con el test_id correspondiente
+            const [insResult] = await pool.query(
+                'INSERT INTO pregunta (test_id, enunciado, feedback, orden) VALUES (?, ?, ?, ?)',
+                [test_id, p.enunciado, p.feedback, p.orden]
+            );
+
+            const nuevaPreguntaId = insResult.insertId;
+
+            // 3. Clonar las opciones asociadas
+            const [optRows] = await pool.query('SELECT * FROM opcion WHERE pregunta_id = ?', [id]);
+            for (let opt of optRows) {
+                await pool.query(
+                    'INSERT INTO opcion (pregunta_id, texto, es_correcta, letra) VALUES (?, ?, ?, ?)',
+                    [nuevaPreguntaId, opt.texto, opt.es_correcta, opt.letra]
+                );
+            }
+        }
+        res.json({ ok: true });
+    } catch (error) {
+        console.error("❌ Error en vincularPreguntas:", error);
+        res.status(500).json({ ok: false, error: error.message });
     }
 };
