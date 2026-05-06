@@ -1,7 +1,8 @@
 <%
   const unreadCount = (notificaciones || []).filter(n => !n.leida).length;
+  const apellidoParaUI = user ? (user.apellido || user.apellidos || '') : '';
   const iniciales = user
-    ? user.nombre.charAt(0).toUpperCase() + user.apellido.charAt(0).toUpperCase()
+    ? user.nombre.charAt(0).toUpperCase() + (apellidoParaUI.charAt(0) || '').toUpperCase()
     : 'US';
 %>
 
@@ -10,7 +11,7 @@
 
   <!-- LOGO -->
   <div class="logo-area">
-    <a class="moodle-logo" href="http://localhost:3000">
+    <a class="moodle-logo" href="/">
       <div class="moodle-icon">
         <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 72V38c0-3 2-5 5-5h6c3 0 5 2 5 5v34h10V50c0-3 2-5 5-5h6c3 0 5 2 5 5v22h10V46c0-3 2-5 5-5h6c3 0 5 2 5 5v26"
@@ -102,7 +103,7 @@
 
       <div class="dropdown-menu profile-menu" id="profileMenu">
         <div class="profile-menu-header">
-          <span class="profile-menu-name"><%= user ? user.nombre + ' ' + user.apellido : 'Usuario' %></span>
+          <span class="profile-menu-name"><%= user ? user.nombre + ' ' + apellidoParaUI : 'Usuario' %></span>
           <span class="profile-menu-email"><%= user && user.email ? user.email : '' %></span>
           <span class="rol-badge <%= user && user.rol === 'profesor' ? 'rol-profesor' : 'rol-alumno' %>">
             <%= user && user.rol === 'profesor' ? 'Profesor' : 'Alumno' %>
