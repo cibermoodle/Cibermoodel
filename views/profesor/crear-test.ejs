@@ -1,0 +1,133 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <% if (test && test.test_id) { %>
+                            ✏️ Editar Test
+                        <% } else { %>
+                            ➕ Crear Nuevo Test
+                        <% } %>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <% if (error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+
+                    <% if (success) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/profesor/tests/<%= test && test.test_id ? 'editar/' + test.test_id : 'crear' %>">
+                        <!-- Título -->
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título del Test *</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" 
+                                   value="<%= test ? test.titulo : '' %>" required>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3">
+<%= test ? test.descripcion : '' %></textarea>
+                        </div>
+
+                        <!-- Duración -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="duracion_min" class="form-label">Duración (minutos) *</label>
+                                <input type="number" class="form-control" id="duracion_min" name="duracion_min" 
+                                       value="<%= test ? test.duracion_min : '60' %>" min="5" required>
+                            </div>
+
+                            <!-- Fecha de inicio -->
+                            <div class="col-md-6 mb-3">
+                                <label for="start_at" class="form-label">Fecha y Hora de Inicio</label>
+                                <input type="datetime-local" class="form-control" id="start_at" name="start_at" 
+                                       value="<%= test && test.start_at ? test.start_at.toISOString().slice(0, 16) : '' %>">
+                                <small class="text-muted">Déjalo vacío para que esté disponible inmediatamente</small>
+                            </div>
+                        </div>
+
+                        <!-- Estado -->
+                        <% if (test && test.test_id) { %>
+                            <div class="mb-3">
+                                <label for="activo" class="form-label">Estado</label>
+                                <select class="form-select" id="activo" name="activo">
+                                    <option value="activa" <%= test.activo === 'activa' ? 'selected' : '' %>>Activo</option>
+                                    <option value="inactiva" <%= test.activo === 'inactiva' ? 'selected' : '' %>>Inactivo</option>
+                                </select>
+                            </div>
+                        <% } %>
+
+                        <!-- Botones -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Guardar Test
+                            </button>
+                            <a href="/profesor/tests" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Información sobre preguntas -->
+                    <% if (test && test.test_id) { %>
+                        <hr class="my-4">
+                        <h5>📝 Preguntas del Test (<%= preguntas.length %>)</h5>
+                        
+                        <% if (preguntas.length === 0) { %>
+                            <div class="alert alert-info">
+                                No hay preguntas agregadas aún. Puedes agregar preguntas del banco de preguntas.
+                            </div>
+                        <% } else { %>
+                            <div class="list-group">
+                                <% preguntas.forEach((preg, index) => { %>
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong><%= index + 1 %>. <%= preg.enunciado %></strong>
+                                                <% if (preg.feedback) { %>
+                                                    <br><small class="text-muted">💡 <%= preg.feedback %></small>
+                                                <% } %>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="quitarPregunta(<%= preg.pregunta_id %>)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        <% } %>
+
+                        <a href="/profesor/banco-preguntas?test=<%= test.test_id %>" class="btn btn-info mt-3">
+                            <i class="fas fa-plus"></i> Agregar Preguntas del Banco
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function quitarPregunta(preguntaId) {
+    if (confirm('¿Estás seguro de que quieres quitar esta pregunta del test?')) {
+        // Se quitará cuando se actualice el test
+        alert('Funcionalidad en desarrollo. Puedes editar manualmente el test.');
+    }
+}
+</script>

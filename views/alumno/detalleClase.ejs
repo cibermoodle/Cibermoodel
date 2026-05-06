@@ -1,0 +1,132 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="detalle-clase" style="max-width: 1000px; margin: 20px auto;">
+    <div class="clase-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; margin-bottom: 30px;">
+        <h1 style="margin: 0; font-size: 32px;"><%= clase.nombre %></h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">
+            👨‍🏫 Profesor: <%= clase.profesor_nombre %> <%= clase.profesor_apellidos %>
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">
+            <% if (clase.descripcion) { %>
+                <%= clase.descripcion %>
+            <% } else { %>
+                Sin descripción
+            <% } %>
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">📊 Información de la clase</h3>
+            <p><strong>Código de acceso:</strong> <code style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px;"><%= clase.codigo_acceso %></code></p>
+            <p><strong>Estado:</strong> 
+                <% if (clase.activa === 'activa') { %>
+                    <span style="color: #28a745;">✅ Activa</span>
+                <% } else { %>
+                    <span style="color: #dc3545;">⏸ Inactiva</span>
+                <% } %>
+            </p>
+            <p><strong>Fecha de creación:</strong> <%= new Date(clase.created_at).toLocaleDateString('es-ES') %></p>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">👥 Alumnos registrados</h3>
+            <p style="font-size: 24px; color: #667eea; margin: 10px 0;"><strong><%= alumnos.length %></strong></p>
+            <% if (alumnos.length > 0) { %>
+                <p style="font-size: 14px; color: #666;">Total de estudiantes en esta clase</p>
+            <% } else { %>
+                <p style="font-size: 14px; color: #666;">Aún no hay alumnos registrados</p>
+            <% } %>
+        </div>
+    </div>
+
+    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="margin-top: 0;">Registro de Alumnos</h2>
+        
+        <% if (alumnos.length === 0) { %>
+            <div style="text-align: center; padding: 40px 20px; background: #f9f9f9; border-radius: 4px;">
+                <p style="color: #999; font-size: 16px;">No hay alumnos registrados en esta clase</p>
+            </div>
+        <% } else { %>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+                            <th style="padding: 12px; text-align: left; font-weight: bold;">Nombre</th>
+                            <th style="padding: 12px; text-align: left; font-weight: bold;">Email</th>
+                            <th style="padding: 12px; text-align: left; font-weight: bold;">Fecha de registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% alumnos.forEach((alumno, index) => { %>
+                            <tr class="<% if (index % 2 === 0) { %>row-alternate<% } %>" style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 12px;">
+                                    <strong><%= alumno.nombre %> <%= alumno.apellidos %></strong>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <%= alumno.email %>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <% 
+                                        const fecha = new Date(alumno.fecha_union);
+                                        const hoy = new Date();
+                                        const diff = Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24));
+                                    %>
+                                    <%= fecha.toLocaleDateString('es-ES') %>
+                                    <% if (diff === 0) { %>
+                                        <span style="color: #667eea; font-size: 12px;"> (Hoy)</span>
+                                    <% } else if (diff === 1) { %>
+                                        <span style="color: #667eea; font-size: 12px;"> (Ayer)</span>
+                                    <% } else if (diff < 7) { %>
+                                        <span style="color: #667eea; font-size: 12px;"> (hace <%= diff %> días)</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="/alumno" class="btn-volver" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            ← Volver a mis clases
+        </a>
+    </div>
+</div>
+
+<style>
+    .detalle-clase {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    code {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+    }
+    
+    .btn-volver:hover {
+        background: #5568d3;
+        text-decoration: none;
+    }
+    
+    table tr:hover {
+        background: #f0f0f0 !important;
+    }
+    
+    .row-alternate {
+        background: #fafafa;
+    }
+</style>

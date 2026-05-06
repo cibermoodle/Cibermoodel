@@ -1,0 +1,33 @@
+<div style="max-width:500px; margin: 40px auto; padding: 0 20px;">
+    <h2>Crear nueva clase</h2>
+
+    <% if (error) { %>
+        <div style="background:#fdd; border:1px solid #e00; padding:10px; border-radius:6px; margin-bottom:16px;">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% if (success) { %>
+        <div style="background:#dfd; border:1px solid #0a0; padding:10px; border-radius:6px; margin-bottom:16px;">
+            <%= success %>
+        </div>
+    <% } %>
+
+    <form action="/profesor/crearclase" method="POST">
+        <div style="margin-bottom:16px;">
+            <label for="nombre"><strong>Nombre de la clase *</strong></label><br>
+            <input type="text" id="nombre" name="nombre" required
+                   style="width:100%; padding:8px; margin-top:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+        </div>
+        <div style="margin-bottom:16px;">
+            <label for="descripcion"><strong>Descripción</strong></label><br>
+            <textarea id="descripcion" name="descripcion" rows="4"
+                      style="width:100%; padding:8px; margin-top:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;"></textarea>
+        </div>
+        <button type="submit"
+                style="background:#1a5276; color:white; padding:10px 24px; border:none; border-radius:4px; cursor:pointer;">
+            Crear clase
+        </button>
+        <a href="/profesor" style="margin-left:12px; color:#555; text-decoration:none;">Cancelar</a>
+    </form>
+</div>

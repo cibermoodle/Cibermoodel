@@ -1,0 +1,100 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="edit-page">
+
+    <div class="edit-header">
+        <a href="/profesor">←</a>
+        <h2>Editar clase</h2>
+    </div>
+
+    <% if (error) { %><div class="alert-error"><%= error %></div><% } %>
+    <% if (success) { %><div class="alert-success"><%= success %></div><% } %>
+
+    <form action="/profesor/editarclase/<%= clase.clase_id %>" method="POST">
+
+        <!-- Info básica -->
+        <div class="form-card">
+            <p class="form-card-title">Información de la clase</p>
+            <div class="form-group">
+                <label class="form-label">Nombre <span>*</span></label>
+                <input type="text" name="nombre" required value="<%= clase.nombre %>" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" rows="3" class="form-control"><%= clase.descripcion || '' %></textarea>
+            </div>
+        </div>
+
+        <!-- Código acceso -->
+        <div class="form-card">
+            <p class="form-card-title">Código de acceso</p>
+            <div class="codigo-display">
+                <span style="font-size:0.88rem; color:#555;">Código actual:</span>
+                <span class="codigo-badge-lg"><%= clase.codigo_acceso %></span>
+            </div>
+            <label class="check-label">
+                <input type="checkbox" name="nuevo_codigo" value="si">
+                Generar nuevo código de acceso
+            </label>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-card">
+            <p class="form-card-title">Estado de la clase</p>
+            <div class="estado-opciones">
+                <label class="estado-option">
+                    <input type="radio" name="activa" value="1" <%= clase.activa === 'activa' ? 'checked' : '' %>>
+                    <span>✅ Activa</span>
+                </label>
+                <label class="estado-option">
+                    <input type="radio" name="activa" value="0" <%= clase.activa === 'inactiva' ? 'checked' : '' %>>
+                    <span>⏸ Inactiva</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Color -->
+        <div class="form-card">
+            <p class="form-card-title">Color de la tarjeta</p>
+            <div class="colores-grid" id="colores-wrap">
+                <% const colores = ['#1a3a5c','#117a65','#6c3483','#922b21','#d35400','#1a5276','#0e6655','#784212','#1b2631','#2471a3']; %>
+                <% colores.forEach(c => { %>
+                    <div class="color-dot" style="background:<%= c %>;" 
+                         onclick="elegirColor('<%= c %>', this)" 
+                         title="<%= c %>">
+                    </div>
+                <% }) %>
+                <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; color:#555; cursor:pointer;">
+                    <input type="color" id="color-custom" value="#1a3a5c"
+                           oninput="elegirColor(this.value, null)"
+                           style="width:34px; height:34px; border:none; border-radius:50%; cursor:pointer; padding:0; box-shadow:0 1px 4px rgba(0,0,0,0.25);">
+                    Otro
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-guardar">Guardar cambios</button>
+            <a href="/profesor" class="btn-cancelar">Cancelar</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+const claseId = '<%= clase.clase_id %>';
+const colorGuardado = localStorage.getItem('clase_color_' + claseId) || '#1a3a5c';
+
+document.getElementById('color-custom').value = colorGuardado;
+
+document.querySelectorAll('.color-dot').forEach(dot => {
+    if (dot.title === colorGuardado) dot.classList.add('selected');
+});
+
+function elegirColor(color, dotEl) {
+    localStorage.setItem('clase_color_' + claseId, color);
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    if (dotEl) dotEl.classList.add('selected');
+    document.getElementById('color-custom').value = color;
+}
+</script>

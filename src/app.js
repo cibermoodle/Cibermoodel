@@ -891,7 +891,9 @@ app.use((req, res) => {
 
 // Manejo de errores 500
 app.use((err, req, res, next) => {
-    res.status(500).render('500', { title: 'Error del servidor' });
+    console.error('❌ ERROR 500:', err.message);
+    console.error(err.stack);
+    res.status(500).send('<pre>' + err.stack + '</pre>');
 });
 
 // Puerto

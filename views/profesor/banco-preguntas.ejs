@@ -1,0 +1,84 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div style="padding: 30px; max-width: 1400px; margin: 0 auto;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #333; margin: 0 0 10px 0; font-size: 32px;">📚 Banco de Preguntas Reutilizable</h1>
+        <p style="color: #999; margin: 0; font-size: 14px;">Crea y reutiliza preguntas en múltiples tests</p>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; gap: 10px; flex: 1; min-width: 300px;">
+            <input type="text" id="searchInput" placeholder="Buscar preguntas..." style="flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+        </div>
+
+        <a href="/profesor/banco-preguntas/crear" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+            ➕ Nueva pregunta
+        </a>
+    </div>
+
+    <div id="preguntasContainer" style="display: grid; gap: 15px;">
+        <% if (preguntas.length === 0) { %>
+            <div style="background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+                <p style="color: #999;">📋 No hay preguntas en el banco</p>
+                <a href="/profesor/banco-preguntas/crear" class="btn-primary" style="margin-top:10px; display:inline-block;">Crear ahora</a>
+            </div>
+        <% } else { %>
+            <% preguntas.forEach((pregunta) => { %>
+                <div class="pregunta-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 4px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 10px 0; color: #333; font-size: 16px;">
+                                <%= pregunta.enunciado %>
+                            </h3>
+                            
+                            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+                                <span style="color: #667eea; font-size: 12px; font-weight: bold;">
+                                    📝 <%= pregunta.num_opciones || 0 %> opciones
+                                </span>
+                                <span style="color: #999; font-size: 12px;">
+                                    Usado en <%= pregunta.num_respuestas || 0 %> respuestas
+                                </span>
+                            </div>
+
+                            <% if (pregunta.feedback) { %>
+                                <div style="background: #f0f4ff; padding: 10px; border-radius: 6px; font-size: 13px;">
+                                    💡 <%= pregunta.feedback %>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <a href="/profesor/banco-preguntas/editar/<%= pregunta.pregunta_id %>" style="padding: 6px 12px; background: #667eea; color: white; border-radius: 4px; text-decoration: none; text-align: center; font-size: 12px;">✏️ Editar</a>
+                            <button onclick="eliminarPregunta(<%= pregunta.pregunta_id %>)" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
+        <a href="/profesor" style="text-decoration: none; color: #666; font-weight: bold;">← Volver al panel</a>
+    </div>
+</div>
+
+<script>
+// Lógica de búsqueda en tiempo real
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.pregunta-card');
+    
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
+    });
+});
+
+function eliminarPregunta(id) {
+    if (confirm('¿Eliminar del banco?')) {
+        fetch(`/profesor/banco-preguntas/eliminar/${id}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => data.ok ? location.reload() : alert('Error'));
+    }
+}
+</script>

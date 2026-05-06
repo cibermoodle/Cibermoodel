@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="form-container" style="max-width: 500px; margin: 40px auto;">
+    <h2>Unirse a una clase</h2>
+    
+    <% if (error) { %>
+        <div class="alert alert-error" style="margin-bottom: 20px; padding: 12px; background: #fee; border: 1px solid #f99; border-radius: 4px; color: #c33;">
+            <%= error %>
+        </div>
+    <% } %>
+    
+    <% if (success) { %>
+        <div class="alert alert-success" style="margin-bottom: 20px; padding: 12px; background: #efe; border: 1px solid #9f9; border-radius: 4px; color: #3a3;">
+            <%= success %>
+        </div>
+    <% } %>
+    
+    <form method="POST" action="/alumno/unirse">
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="codigo_acceso" style="display: block; margin-bottom: 8px; font-weight: bold;">Código de acceso:</label>
+            <input 
+                type="text" 
+                id="codigo_acceso" 
+                name="codigo_acceso" 
+                placeholder="Ej: ABC123" 
+                required
+                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;"
+            >
+            <small style="display: block; margin-top: 6px; color: #666;">
+                Pide el código a tu profesor para acceder a la clase.
+            </small>
+        </div>
+        
+        <button type="submit" class="btn-submit" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;">
+            Unirse a la clase
+        </button>
+    </form>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="/alumno" style="color: #007bff; text-decoration: none;">← Volver a mis clases</a>
+    </div>
+</div>
+
+<style>
+    .form-container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .btn-submit:hover {
+        background: #0056b3;
+    }
+</style>

@@ -1,0 +1,139 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h3 class="mb-0">✏️ Editar Test: <%= test.titulo %></h3>
+                </div>
+                <div class="card-body">
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger alert-dismissible fade show"><%= error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    <% } %>
+
+                    <form method="POST" action="/profesor/tests/editar/<%= test.test_id %>">
+                        <div class="mb-3">
+                            <label class="form-label">Título del Test *</label>
+                            <input type="text" class="form-control" name="titulo" value="<%= test.titulo %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="descripcion" rows="3"><%= test.descripcion || '' %></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Duración (minutos) *</label>
+                                <input type="number" class="form-control" name="duracion_min" value="<%= test.duracion_min %>" min="5" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha y Hora de Inicio</label>
+                                <input type="datetime-local" class="form-control" name="start_at" value="<%= test.start_at ? new Date(test.start_at).toISOString().slice(0, 16) : '' %>">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="activo">
+                                <option value="activa" <%= test.activo === 'activa' ? 'selected' : '' %>>Activo</option>
+                                <option value="inactiva" <%= test.activo === 'inactiva' ? 'selected' : '' %>>Inactivo</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Guardar Cambios</button>
+                            <a href="/profesor/tests" class="btn btn-secondary">Volver</a>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h5>📝 Preguntas en este Test (<%= preguntas.length %>)</h5>
+                    <% if (preguntas.length === 0) { %>
+                        <div class="alert alert-info">No hay preguntas aún.</div>
+                    <% } else { %>
+                        <div class="list-group mb-3">
+                            <% preguntas.forEach((preg, index) => { %>
+                                <div class="list-group-item">
+                                    <strong><%= index + 1 %>. <%= preg.enunciado %></strong>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+
+                    <button type="button" onclick="abrirBanco()" class="btn btn-info text-white">
+                        <i class="fas fa-search-plus"></i> Agregar del Banco de Preguntas
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalBanco" class="modal" tabindex="-1" style="background: rgba(0,0,0,0.6);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">📋 Seleccionar Preguntas</h5>
+                <button type="button" class="btn-close" onclick="cerrarModal()"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                <div id="listaPreguntasBanco" class="list-group">
+                    <p class="text-center">Cargando...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="vincularSeleccionadas()">Añadir al Test</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const currentTestId = "<%= test.test_id %>";
+
+function abrirBanco() {
+    document.getElementById('modalBanco').style.display = 'block';
+    fetch('/profesor/banco-preguntas/buscar')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('listaPreguntasBanco');
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-center">El banco está vacío.</p>';
+                return;
+            }
+            container.innerHTML = data.map(p => `
+                <label class="list-group-item d-flex align-items-center" style="cursor:pointer;">
+                    <input type="checkbox" class="pregunta-check me-3" value="${p.pregunta_id}">
+                    <div>
+                        <div class="fw-bold">${p.enunciado}</div>
+                        <small class="text-muted">${p.feedback || ''}</small>
+                    </div>
+                </label>
+            `).join('');
+        });
+}
+
+function cerrarModal() {
+    document.getElementById('modalBanco').style.display = 'none';
+}
+
+function vincularSeleccionadas() {
+    const ids = Array.from(document.querySelectorAll('.pregunta-check:checked')).map(cb => cb.value);
+    if (ids.length === 0) return alert("Selecciona alguna pregunta.");
+
+    fetch('/profesor/banco-preguntas/vincular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ test_id: currentTestId, pregunta_ids: ids })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.ok) location.reload();
+        else alert("Error al vincular.");
+    });
+}
+</script>

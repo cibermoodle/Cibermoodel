@@ -1,0 +1,110 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📋 Mis Tests</h2>
+                <a href="/profesor/tests/crear" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Nuevo Test
+                </a>
+            </div>
+
+            <% if (tests.length === 0) { %>
+                <div class="alert alert-info">
+                    <p>No hay tests creados aún. 
+                        <a href="/profesor/tests/crear">Crear el primer test</a>
+                    </p>
+                </div>
+            <% } else { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Título</th>
+                                <th>Duración</th>
+                                <th>Preguntas</th>
+                                <th>Estado</th>
+                                <th>Creado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% tests.forEach(test => { %>
+                                <tr>
+                                    <td>
+                                        <strong><%= test.titulo %></strong>
+                                        <% if (test.descripcion) { %>
+                                            <br><small class="text-muted"><%= test.descripcion.substring(0, 50) %>...</small>
+                                        <% } %>
+                                    </td>
+                                    <td><%= test.duracion_min %> min</td>
+                                    <td>
+                                        <span class="badge bg-info"><%= test.num_preguntas %> preguntas</span>
+                                    </td>
+                                    <td>
+                                        <% if (test.activo === 'activa') { %>
+                                            <span class="badge bg-success">Activo</span>
+                                        <% } else { %>
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        <% } %>
+                                    </td>
+                                    <td><small><%= new Date(test.created_at).toLocaleDateString() %></small></td>
+                                    <td>
+                                        <a href="/profesor/tests/ver/<%= test.test_id %>" class="btn btn-sm btn-info me-1" title="Ver detalles">
+                                            <i class="fas fa-eye text-white"></i>
+                                        </a>
+                                        <a href="/profesor/tests/editar/<%= test.test_id %>" class="btn btn-sm btn-warning me-1" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" onclick="eliminarTest(<%= test.test_id %>)" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="/profesor" style="text-decoration: none; color: #666; font-weight: bold;">← Volver al panel</a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+function eliminarTest(testId) {
+    if (confirm('¿Estás seguro de que quieres eliminar este test? Se eliminarán todas sus preguntas y respuestas.')) {
+        fetch(`/profesor/tests/eliminar/${testId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.ok) {
+                alert('Test eliminado correctamente');
+                location.reload();
+            } else {
+                alert('Error al eliminar el test');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+</script>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+    .fas {
+        width: 16px;
+        text-align: center;
+    }
+</style>
