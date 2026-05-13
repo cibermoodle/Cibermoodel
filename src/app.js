@@ -113,6 +113,34 @@ app.get('/inicio', (req, res) => {
     return res.render('index', { title: 'Inicio', paginaActual: 'dashboard' });
 });
 
+app.get('/perfil', requireAuth, async (req, res) => {
+    try {
+        const usuarioId = req.session.user.usuario_id;
+        const usuario = await User.findById(usuarioId);
+
+        if (!usuario) {
+            req.session.destroy(() => {
+                res.redirect('/login');
+            });
+            return;
+        }
+
+        return res.render('perfil', {
+            title: 'Mi perfil',
+            paginaActual: 'perfil',
+            perfil: {
+                usuario_id: usuario.usuario_id,
+                nombre: usuario.nombre,
+                apellidos: usuario.apellidos,
+                email: usuario.email,
+                rol: usuario.rol,
+            },
+        });
+    } catch (error) {
+        return res.status(500).render('500', { title: 'Error del servidor' });
+    }
+});
+
 app.get('/login', (req, res) => {
     if (req.session && req.session.user) {
         return res.redirect(getRoleHome(req.session.user.rol));
