@@ -33,6 +33,131 @@ exports.dashboard = async (req, res) => {
     }
 };
 
+// GET /alumno/examenes - Ver tests disponibles según fecha de inicio y fin
+exports.verExamenes = async (req, res) => {
+    try {
+        const alumno_id = 1; // Cambiar por sesión real
+
+        const [examenes] = await pool.query(
+            `SELECT t.*, c.nombre as clase_nombre,
+                    DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) as end_at
+             FROM clase_alumno ca
+             JOIN clase c ON ca.clase_id = c.clase_id
+             JOIN clase_test ct ON c.clase_id = ct.clase_id
+             JOIN test t ON ct.test_id = t.test_id
+             WHERE ca.alumno_id = ?
+               AND t.activo = 'activa'
+               AND (t.start_at IS NULL OR t.start_at <= NOW())
+               AND (t.start_at IS NULL OR DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) >= NOW())
+             ORDER BY DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) ASC, t.start_at ASC`,
+            [alumno_id]
+        );
+
+        res.render('alumno/examenes', {
+            examenes,
+            title: 'Exámenes disponibles',
+            paginaActual: 'examenes'
+        });
+    } catch (err) {
+        console.error('❌ ERROR en verExamenes:', err.message);
+        res.render('alumno/examenes', {
+            examenes: [],
+            title: 'Exámenes disponibles',
+            paginaActual: 'examenes'
+        });
+    }
+};
+
+// GET /alumno/examen/:id - Ver y realizar un test
+exports.verExamen = async (req, res) => {
+    try {
+        const test_id = req.params.id;
+        const alumno_id = 1; // Cambiar por sesión real
+
+        // Verificar que el test está disponible para el alumno (en su clase y en fecha)
+        const [tests] = await pool.query(
+            `SELECT t.*, c.nombre as clase_nombre, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos,
+                    DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) as end_at
+             FROM clase_alumno ca
+             JOIN clase c ON ca.clase_id = c.clase_id
+             JOIN clase_test ct ON c.clase_id = ct.clase_id
+             JOIN test t ON ct.test_id = t.test_id
+             JOIN profesor p ON t.profesor_id = p.profesor_id
+             JOIN usuario u ON p.usuario_id = u.usuario_id
+             WHERE ca.alumno_id = ?
+               AND t.test_id = ?
+               AND t.activo = 'activa'
+               AND (t.start_at IS NULL OR t.start_at <= NOW())
+               AND (t.start_at IS NULL OR DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) >= NOW())`,
+            [alumno_id, test_id]
+        );
+
+        if (tests.length === 0) {
+            return res.status(404).render('404', { title: 'Examen no disponible' });
+        }
+
+        // Obtener preguntas con sus opciones
+        const [preguntas] = await pool.query(
+            `SELECT * FROM pregunta WHERE test_id = ? ORDER BY orden ASC`,
+            [test_id]
+        );
+
+        for (const preg of preguntas) {
+            const [opciones] = await pool.query(
+                `SELECT opcion_id, letra, texto FROM opcion WHERE pregunta_id = ? ORDER BY letra ASC`,
+                [preg.pregunta_id]
+            );
+            preg.opciones = opciones;
+        }
+
+        const examen = tests[0];
+
+        res.render('alumno/examen', {
+            examen,
+            preguntas,
+            title: tests[0].titulo,
+            paginaActual: 'examenes'
+        });
+    } catch (err) {
+        console.error('❌ ERROR en verExamen:', err.message);
+        res.status(500).render('500', { title: 'Error del servidor' });
+    }
+};
+
+// POST /alumno/examen/:id - Guardar respuestas del test
+exports.enviarRespuestas = async (req, res) => {
+    try {
+        const test_id = req.params.id;
+        const alumno_id = 1; // Cambiar por sesión real
+        const respuestas = req.body; // { pregunta_X: opcion_id, ... }
+
+        // Borrar respuestas previas del alumno para este test
+        await pool.query(
+            `DELETE FROM respuesta
+             WHERE alumno_id = ?
+               AND pregunta_id IN (SELECT pregunta_id FROM pregunta WHERE test_id = ?)`,
+            [alumno_id, test_id]
+        );
+
+        // Guardar cada respuesta
+        for (const [key, opcion_id] of Object.entries(respuestas)) {
+            if (!key.startsWith('pregunta_')) continue;
+            const pregunta_id = parseInt(key.replace('pregunta_', ''));
+            if (!pregunta_id || !opcion_id) continue;
+
+            await pool.query(
+                `INSERT INTO respuesta (alumno_id, pregunta_id, opcion_id) VALUES (?, ?, ?)`,
+                [alumno_id, pregunta_id, parseInt(opcion_id)]
+            );
+        }
+
+        res.redirect(`/alumno/examenes`);
+    } catch (err) {
+        console.error('❌ ERROR en enviarRespuestas:', err.message);
+        res.status(500).render('500', { title: 'Error del servidor' });
+    }
+};
+
 // GET /alumno/unirse - Mostrar formulario para unirse a una clase
 exports.mostrarUnirse = (req, res) => {
     res.render('alumno/unirseClase', {
