@@ -56,4 +56,12 @@ router.get('/api/tests-disponibles', testController.obtenerTests);
 router.post('/clase/asignar-test', profesorController.asignarTestAClase);
 router.post('/clase/desvincular-test', profesorController.desvincularTestDeClase);
 
+// =====================================================
+// API PARA ASIGNAR ALUMNOS A CLASES
+// =====================================================
+router.get('/api/alumnos-disponibles/:clase_id', profesorController.obtenerAlumnosDisponibles);
+router.post('/api/crear-alumno', profesorController.crearAlumno);
+router.post('/clase/asignar-alumno', profesorController.asignarAlumnoAClase);
+router.post('/clase/desasignar-alumno', profesorController.desasignarAlumnoDeClase);
+
 module.exports = router;

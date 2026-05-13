@@ -246,6 +246,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 .dropdown-wrapper { position: relative; }
 
 .dropdown-menu {
+  display: block;
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
@@ -261,6 +262,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   min-width: 200px;
 }
 .dropdown-menu.open {
+  display: block;
   opacity: 1;
   pointer-events: all;
   transform: translateY(0);

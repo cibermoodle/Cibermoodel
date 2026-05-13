@@ -43,6 +43,6 @@ async function run() {
 }
 
 run().catch(err => {
-  console.error('❌ Error ejecutando SQL:', err.message);
-  process.exit(1);
+  console.warn('⚠️  No se pudo conectar a MySQL en el prestart:', err.message);
+  console.warn('   El servidor arrancará igualmente. Asegúrate de que MySQL esté activo.');
 });
