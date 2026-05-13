@@ -190,6 +190,7 @@
     }
 
     async function crearNuevoAlumno() {
+        // Primer modal: Datos del alumno
         const resultado = await Swal.fire({
             title: 'Crear nuevo alumno',
             html: `
@@ -200,7 +201,7 @@
             `,
             showCancelButton: true,
             confirmButtonColor: '#667eea',
-            confirmButtonText: 'Crear alumno',
+            confirmButtonText: 'Siguiente',
             cancelButtonText: 'Cancelar',
             preConfirm: () => {
                 const nombre = document.getElementById('swalNombre').value.trim();
@@ -229,37 +230,83 @@
             }
         });
 
-        if (resultado.isConfirmed && resultado.value) {
-            try {
-                const res = await fetch('/profesor/api/crear-alumno', {
+        if (!resultado.isConfirmed || !resultado.value) {
+            return;
+        }
+
+        // Segundo modal: Contraseña
+        const datosAlumno = resultado.value;
+        const resultadoContraseña = await Swal.fire({
+            title: 'Establecer contraseña',
+            html: `
+                <p style="color: #666; margin-bottom: 15px;">Ingresa una contraseña para el alumno <strong>${datosAlumno.nombre} ${datosAlumno.apellido}</strong></p>
+                <input type="password" id="swalPassword" class="swal2-input" placeholder="Contraseña" style="margin-bottom: 10px;">
+                <input type="password" id="swalPasswordConfirm" class="swal2-input" placeholder="Confirmar contraseña">
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'Crear alumno',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const password = document.getElementById('swalPassword').value.trim();
+                const passwordConfirm = document.getElementById('swalPasswordConfirm').value.trim();
+
+                if (!password) {
+                    Swal.showValidationMessage('La contraseña es obligatoria');
+                    return false;
+                }
+                if (password.length < 6) {
+                    Swal.showValidationMessage('La contraseña debe tener al menos 6 caracteres');
+                    return false;
+                }
+                if (password !== passwordConfirm) {
+                    Swal.showValidationMessage('Las contraseñas no coinciden');
+                    return false;
+                }
+
+                return password;
+            }
+        });
+
+        if (!resultadoContraseña.isConfirmed || !resultadoContraseña.value) {
+            return;
+        }
+
+        // Combinar datos y contraseña
+        const datosCompletos = {
+            ...datosAlumno,
+            password: resultadoContraseña.value
+        };
+
+        try {
+            const res = await fetch('/profesor/api/crear-alumno', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosCompletos)
+            });
+
+            const result = await res.json();
+            if (result.ok) {
+                // Ahora asignar el alumno a la clase
+                const asignarRes = await fetch('/profesor/clase/asignar-alumno', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(resultado.value)
+                    body: JSON.stringify({ clase_id: CLASE_ID, alumno_id: result.alumno_id })
                 });
 
-                const result = await res.json();
-                if (result.ok) {
-                    // Ahora asignar el alumno a la clase
-                    const asignarRes = await fetch('/profesor/clase/asignar-alumno', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ clase_id: CLASE_ID, alumno_id: result.alumno_id })
-                    });
-
-                    const asignarResult = await asignarRes.json();
-                    if (asignarResult.ok) {
-                        Swal.fire('¡Éxito!', 'Alumno creado y asignado a la clase', 'success')
-                            .then(() => location.reload());
-                    } else {
-                        Swal.fire('Error', asignarResult.error || 'No se pudo asignar el alumno', 'error');
-                    }
+                const asignarResult = await asignarRes.json();
+                if (asignarResult.ok) {
+                    Swal.fire('¡Éxito!', 'Alumno creado y asignado a la clase', 'success')
+                        .then(() => location.reload());
                 } else {
-                    Swal.fire('Error', result.error || 'No se pudo crear el alumno', 'error');
+                    Swal.fire('Error', asignarResult.error || 'No se pudo asignar el alumno', 'error');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire('Error', 'Fallo en la comunicación con el servidor', 'error');
+            } else {
+                Swal.fire('Error', result.error || 'No se pudo crear el alumno', 'error');
             }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire('Error', 'Fallo en la comunicación con el servidor', 'error');
         }
     }
 
