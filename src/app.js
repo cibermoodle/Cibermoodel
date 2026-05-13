@@ -20,6 +20,8 @@ function toSha256(value) {
     return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+const STRONG_PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
 async function isValidPassword(plainPassword, storedHash) {
     if (!storedHash) {
         return false;
@@ -60,6 +62,10 @@ async function hashPassword(password) {
     return bcrypt.hash(password, 10);
 }
 
+function isStrongPassword(password) {
+    return STRONG_PASSWORD_REGEX.test(password);
+}
+
 // Configuración del motor de vistas EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
@@ -96,6 +102,10 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
+    return res.redirect('/login');
+});
+
+app.get('/inicio', (req, res) => {
     if (!req.session || !req.session.user) {
         return res.redirect('/login');
     }
@@ -305,6 +315,7 @@ app.post('/admin/alumnos/:alumnoId/editar', requireAuth, requireRole('admin'), a
     const apellidos = (req.body.apellidos || '').trim();
     const email = (req.body.email || '').trim().toLowerCase();
     const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
     const fechaNacimiento = (req.body.fecha_nacimiento || '').trim();
 
     const datos = {
@@ -324,13 +335,33 @@ app.post('/admin/alumnos/:alumnoId/editar', requireAuth, requireRole('admin'), a
         });
     }
 
-    if (password && password.length < 6) {
+    if (password && !isStrongPassword(password)) {
         return res.status(400).render('admin/editar-alumno', {
             title: 'Editar alumno',
             paginaActual: 'admin',
-            error: 'Si cambias la contraseña, debe tener al menos 6 caracteres.',
+            error: 'Si cambias la contraseña, debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
             datos,
         });
+    }
+
+    if (password || passwordConfirm) {
+        if (!password || !passwordConfirm) {
+            return res.status(400).render('admin/editar-alumno', {
+                title: 'Editar alumno',
+                paginaActual: 'admin',
+                error: 'Debes escribir y verificar la nueva contraseña.',
+                datos,
+            });
+        }
+
+        if (password !== passwordConfirm) {
+            return res.status(400).render('admin/editar-alumno', {
+                title: 'Editar alumno',
+                paginaActual: 'admin',
+                error: 'La contraseña y su verificación no coinciden.',
+                datos,
+            });
+        }
     }
 
     const connection = await pool.getConnection();
@@ -504,6 +535,7 @@ app.post('/admin/profesores/:profesorId/editar', requireAuth, requireRole('admin
     const apellidos = (req.body.apellidos || '').trim();
     const email = (req.body.email || '').trim().toLowerCase();
     const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
     const departamento = (req.body.departamento || '').trim();
 
     const datos = {
@@ -523,13 +555,33 @@ app.post('/admin/profesores/:profesorId/editar', requireAuth, requireRole('admin
         });
     }
 
-    if (password && password.length < 6) {
+    if (password && !isStrongPassword(password)) {
         return res.status(400).render('admin/editar-profesor', {
             title: 'Editar profesor',
             paginaActual: 'admin',
-            error: 'Si cambias la contraseña, debe tener al menos 6 caracteres.',
+            error: 'Si cambias la contraseña, debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
             datos,
         });
+    }
+
+    if (password || passwordConfirm) {
+        if (!password || !passwordConfirm) {
+            return res.status(400).render('admin/editar-profesor', {
+                title: 'Editar profesor',
+                paginaActual: 'admin',
+                error: 'Debes escribir y verificar la nueva contraseña.',
+                datos,
+            });
+        }
+
+        if (password !== passwordConfirm) {
+            return res.status(400).render('admin/editar-profesor', {
+                title: 'Editar profesor',
+                paginaActual: 'admin',
+                error: 'La contraseña y su verificación no coinciden.',
+                datos,
+            });
+        }
     }
 
     const connection = await pool.getConnection();
@@ -687,6 +739,7 @@ app.post('/admin/crear-profesor', requireAuth, requireRole('admin'), async (req,
     const apellidos = (req.body.apellidos || '').trim();
     const email = (req.body.email || '').trim().toLowerCase();
     const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
     const departamento = (req.body.departamento || '').trim();
 
     const datos = {
@@ -696,21 +749,31 @@ app.post('/admin/crear-profesor', requireAuth, requireRole('admin'), async (req,
         departamento,
     };
 
-    if (!nombre || !apellidos || !email || !password) {
+    if (!nombre || !apellidos || !email || !password || !passwordConfirm) {
         return res.status(400).render('admin/crear-profesor', {
             title: 'Crear profesor',
             paginaActual: 'admin',
-            error: 'Nombre, apellidos, email y contraseña son obligatorios.',
+            error: 'Nombre, apellidos, email, contraseña y verificación de contraseña son obligatorios.',
             exito: null,
             datos,
         });
     }
 
-    if (password.length < 6) {
+    if (password !== passwordConfirm) {
         return res.status(400).render('admin/crear-profesor', {
             title: 'Crear profesor',
             paginaActual: 'admin',
-            error: 'La contraseña debe tener al menos 6 caracteres.',
+            error: 'La contraseña y su verificación no coinciden.',
+            exito: null,
+            datos,
+        });
+    }
+
+    if (!isStrongPassword(password)) {
+        return res.status(400).render('admin/crear-profesor', {
+            title: 'Crear profesor',
+            paginaActual: 'admin',
+            error: 'La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
             exito: null,
             datos,
         });
@@ -788,6 +851,7 @@ app.post('/admin/crear-alumno', requireAuth, requireRole('admin'), async (req, r
     const apellidos = (req.body.apellidos || '').trim();
     const email = (req.body.email || '').trim().toLowerCase();
     const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
     const fechaNacimiento = (req.body.fecha_nacimiento || '').trim();
 
     const datos = {
@@ -797,21 +861,31 @@ app.post('/admin/crear-alumno', requireAuth, requireRole('admin'), async (req, r
         fecha_nacimiento: fechaNacimiento,
     };
 
-    if (!nombre || !apellidos || !email || !password) {
+    if (!nombre || !apellidos || !email || !password || !passwordConfirm) {
         return res.status(400).render('admin/crear-alumno', {
             title: 'Crear alumno',
             paginaActual: 'admin',
-            error: 'Nombre, apellidos, email y contraseña son obligatorios.',
+            error: 'Nombre, apellidos, email, contraseña y verificación de contraseña son obligatorios.',
             exito: null,
             datos,
         });
     }
 
-    if (password.length < 6) {
+    if (password !== passwordConfirm) {
         return res.status(400).render('admin/crear-alumno', {
             title: 'Crear alumno',
             paginaActual: 'admin',
-            error: 'La contraseña debe tener al menos 6 caracteres.',
+            error: 'La contraseña y su verificación no coinciden.',
+            exito: null,
+            datos,
+        });
+    }
+
+    if (!isStrongPassword(password)) {
+        return res.status(400).render('admin/crear-alumno', {
+            title: 'Crear alumno',
+            paginaActual: 'admin',
+            error: 'La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
             exito: null,
             datos,
         });
@@ -881,6 +955,337 @@ app.post('/admin/crear-alumno', requireAuth, requireRole('admin'), async (req, r
             exito: null,
             datos,
         });
+    }
+});
+
+app.get('/admin/administradores', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+        const q = (req.query.q || '').trim();
+        const search = `%${q}%`;
+        const [administradores] = await pool.query(
+            `
+                SELECT
+                    usuario_id,
+                    nombre,
+                    apellidos,
+                    email
+                FROM usuario
+                WHERE rol = 'admin'
+                  AND (nombre LIKE ? OR apellidos LIKE ? OR email LIKE ?)
+                ORDER BY apellidos ASC, nombre ASC
+            `,
+            [search, search, search]
+        );
+
+        return res.render('admin/lista-administradores', {
+            title: 'Listado de administradores',
+            paginaActual: 'admin',
+            administradores,
+            q,
+        });
+    } catch (error) {
+        return res.status(500).render('500', { title: 'Error del servidor' });
+    }
+});
+
+app.get('/admin/crear-administrador', requireAuth, requireRole('admin'), (req, res) => {
+    res.render('admin/crear-administrador', {
+        title: 'Crear administrador',
+        paginaActual: 'admin',
+        error: null,
+        exito: null,
+        datos: {
+            nombre: '',
+            apellidos: '',
+            email: '',
+        },
+    });
+});
+
+app.post('/admin/crear-administrador', requireAuth, requireRole('admin'), async (req, res) => {
+    const nombre = (req.body.nombre || '').trim();
+    const apellidos = (req.body.apellidos || '').trim();
+    const email = (req.body.email || '').trim().toLowerCase();
+    const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
+
+    const datos = {
+        nombre,
+        apellidos,
+        email,
+    };
+
+    if (!nombre || !apellidos || !email || !password || !passwordConfirm) {
+        return res.status(400).render('admin/crear-administrador', {
+            title: 'Crear administrador',
+            paginaActual: 'admin',
+            error: 'Nombre, apellidos, email, contraseña y verificación de contraseña son obligatorios.',
+            exito: null,
+            datos,
+        });
+    }
+
+    if (password !== passwordConfirm) {
+        return res.status(400).render('admin/crear-administrador', {
+            title: 'Crear administrador',
+            paginaActual: 'admin',
+            error: 'La contraseña y su verificación no coinciden.',
+            exito: null,
+            datos,
+        });
+    }
+
+    if (!isStrongPassword(password)) {
+        return res.status(400).render('admin/crear-administrador', {
+            title: 'Crear administrador',
+            paginaActual: 'admin',
+            error: 'La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
+            exito: null,
+            datos,
+        });
+    }
+
+    try {
+        const existingUser = await User.findByEmail(email);
+        if (existingUser) {
+            return res.status(409).render('admin/crear-administrador', {
+                title: 'Crear administrador',
+                paginaActual: 'admin',
+                error: 'El email ya está registrado.',
+                exito: null,
+                datos,
+            });
+        }
+
+        const passwordHash = await hashPassword(password);
+
+        await pool.query(
+            `
+                INSERT INTO usuario (nombre, apellidos, email, password_hash, rol)
+                VALUES (?, ?, ?, ?, 'admin')
+            `,
+            [nombre, apellidos, email, passwordHash]
+        );
+
+        return res.status(201).render('admin/crear-administrador', {
+            title: 'Crear administrador',
+            paginaActual: 'admin',
+            error: null,
+            exito: 'Administrador creado correctamente.',
+            datos: {
+                nombre: '',
+                apellidos: '',
+                email: '',
+            },
+        });
+    } catch (error) {
+        return res.status(500).render('admin/crear-administrador', {
+            title: 'Crear administrador',
+            paginaActual: 'admin',
+            error: 'No se pudo crear el administrador. Inténtalo de nuevo.',
+            exito: null,
+            datos,
+        });
+    }
+});
+
+app.get('/admin/administradores/:administradorId/editar', requireAuth, requireRole('admin'), async (req, res) => {
+    const administradorId = Number(req.params.administradorId);
+
+    try {
+        const [rows] = await pool.query(
+            `
+                SELECT
+                    usuario_id,
+                    nombre,
+                    apellidos,
+                    email
+                FROM usuario
+                WHERE usuario_id = ?
+                  AND rol = 'admin'
+                LIMIT 1
+            `,
+            [administradorId]
+        );
+
+        const administrador = rows[0];
+        if (!administrador) {
+            return res.status(404).render('404', { title: 'Página no encontrada' });
+        }
+
+        return res.render('admin/editar-administrador', {
+            title: 'Editar administrador',
+            paginaActual: 'admin',
+            error: null,
+            datos: administrador,
+        });
+    } catch (error) {
+        return res.status(500).render('500', { title: 'Error del servidor' });
+    }
+});
+
+app.post('/admin/administradores/:administradorId/editar', requireAuth, requireRole('admin'), async (req, res) => {
+    const administradorId = Number(req.params.administradorId);
+    const nombre = (req.body.nombre || '').trim();
+    const apellidos = (req.body.apellidos || '').trim();
+    const email = (req.body.email || '').trim().toLowerCase();
+    const password = req.body.password || '';
+    const passwordConfirm = req.body.password_confirm || '';
+
+    const datos = {
+        usuario_id: administradorId,
+        nombre,
+        apellidos,
+        email,
+    };
+
+    if (!nombre || !apellidos || !email) {
+        return res.status(400).render('admin/editar-administrador', {
+            title: 'Editar administrador',
+            paginaActual: 'admin',
+            error: 'Nombre, apellidos y email son obligatorios.',
+            datos,
+        });
+    }
+
+    if (password && !isStrongPassword(password)) {
+        return res.status(400).render('admin/editar-administrador', {
+            title: 'Editar administrador',
+            paginaActual: 'admin',
+            error: 'Si cambias la contraseña, debe tener al menos 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.',
+            datos,
+        });
+    }
+
+    if (password || passwordConfirm) {
+        if (!password || !passwordConfirm) {
+            return res.status(400).render('admin/editar-administrador', {
+                title: 'Editar administrador',
+                paginaActual: 'admin',
+                error: 'Debes escribir y verificar la nueva contraseña.',
+                datos,
+            });
+        }
+
+        if (password !== passwordConfirm) {
+            return res.status(400).render('admin/editar-administrador', {
+                title: 'Editar administrador',
+                paginaActual: 'admin',
+                error: 'La contraseña y su verificación no coinciden.',
+                datos,
+            });
+        }
+    }
+
+    try {
+        const [rows] = await pool.query(
+            `
+                SELECT usuario_id
+                FROM usuario
+                WHERE usuario_id = ?
+                  AND rol = 'admin'
+                LIMIT 1
+            `,
+            [administradorId]
+        );
+
+        const administrador = rows[0];
+        if (!administrador) {
+            return res.status(404).render('404', { title: 'Página no encontrada' });
+        }
+
+        const [duplicados] = await pool.query(
+            'SELECT usuario_id FROM usuario WHERE email = ? AND usuario_id <> ? LIMIT 1',
+            [email, administradorId]
+        );
+
+        if (duplicados.length > 0) {
+            return res.status(409).render('admin/editar-administrador', {
+                title: 'Editar administrador',
+                paginaActual: 'admin',
+                error: 'El email ya está registrado por otro usuario.',
+                datos,
+            });
+        }
+
+        if (password) {
+            const passwordHash = await hashPassword(password);
+            await pool.query(
+                `
+                    UPDATE usuario
+                    SET nombre = ?, apellidos = ?, email = ?, password_hash = ?
+                    WHERE usuario_id = ?
+                `,
+                [nombre, apellidos, email, passwordHash, administradorId]
+            );
+        } else {
+            await pool.query(
+                `
+                    UPDATE usuario
+                    SET nombre = ?, apellidos = ?, email = ?
+                    WHERE usuario_id = ?
+                `,
+                [nombre, apellidos, email, administradorId]
+            );
+        }
+
+        if (req.session?.user?.usuario_id === administradorId) {
+            req.session.user.nombre = nombre;
+            req.session.user.apellidos = apellidos;
+            req.session.user.email = email;
+        }
+
+        return res.redirect('/admin/administradores');
+    } catch (error) {
+        return res.status(500).render('admin/editar-administrador', {
+            title: 'Editar administrador',
+            paginaActual: 'admin',
+            error: 'No se pudo actualizar el administrador. Inténtalo de nuevo.',
+            datos,
+        });
+    }
+});
+
+app.post('/admin/administradores/:administradorId/eliminar', requireAuth, requireRole('admin'), async (req, res) => {
+    const administradorId = Number(req.params.administradorId);
+
+    try {
+        const [rows] = await pool.query(
+            `
+                SELECT usuario_id
+                FROM usuario
+                WHERE usuario_id = ?
+                  AND rol = 'admin'
+                LIMIT 1
+            `,
+            [administradorId]
+        );
+
+        const administrador = rows[0];
+        if (!administrador) {
+            return res.status(404).render('404', { title: 'Página no encontrada' });
+        }
+
+        const [totalAdminsRows] = await pool.query(
+            `
+                SELECT COUNT(*) AS total
+                FROM usuario
+                WHERE rol = 'admin'
+            `
+        );
+
+        const totalAdmins = Number(totalAdminsRows[0]?.total || 0);
+        const esMismoUsuario = req.session?.user?.usuario_id === administradorId;
+
+        if (esMismoUsuario || totalAdmins <= 1) {
+            return res.redirect('/admin/administradores');
+        }
+
+        await pool.query('DELETE FROM usuario WHERE usuario_id = ? AND rol = ?', [administradorId, 'admin']);
+
+        return res.redirect('/admin/administradores');
+    } catch (error) {
+        return res.status(500).render('500', { title: 'Error del servidor' });
     }
 });
 

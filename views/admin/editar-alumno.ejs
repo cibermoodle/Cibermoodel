@@ -36,8 +36,14 @@
 
               <div class="col-12">
                 <label class="form-label fw-semibold" for="password">Nueva contraseña <span class="text-muted fw-normal">(opcional)</span></label>
-                <input id="password" type="password" name="password" class="form-control" minlength="6">
-                <div class="form-text">Deja este campo vacío para mantener la contraseña actual.</div>
+                <input id="password" type="password" name="password" class="form-control" minlength="8">
+                <div class="form-text">Deja este campo vacío para mantener la contraseña actual. Si cambias, usa mínimo 8 caracteres, 1 mayúscula, 1 número y 1 carácter especial.</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold" for="password_confirm">Verificar contraseña nueva <span class="text-muted fw-normal">(opcional)</span></label>
+                <input id="password_confirm" type="password" name="password_confirm" class="form-control" minlength="8">
+                <div class="form-text">Solo es necesario si vas a cambiar la contraseña y debe coincidir exactamente.</div>
               </div>
 
               <div class="col-12">
