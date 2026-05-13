@@ -40,7 +40,8 @@ exports.verExamenes = async (req, res) => {
 
         const [examenes] = await pool.query(
             `SELECT t.*, c.nombre as clase_nombre,
-                    DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) as end_at
+                    COALESCE(t.start_at, ct.fecha_asignacion) as inicio_at,
+                    DATE_ADD(COALESCE(t.start_at, ct.fecha_asignacion), INTERVAL t.duracion_min MINUTE) as end_at
              FROM clase_alumno ca
              JOIN clase c ON ca.clase_id = c.clase_id
              JOIN clase_test ct ON c.clase_id = ct.clase_id
@@ -48,8 +49,8 @@ exports.verExamenes = async (req, res) => {
              WHERE ca.alumno_id = ?
                AND t.activo = 'activa'
                AND (t.start_at IS NULL OR t.start_at <= NOW())
-               AND (t.start_at IS NULL OR DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) >= NOW())
-             ORDER BY DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) ASC, t.start_at ASC`,
+               AND DATE_ADD(COALESCE(t.start_at, ct.fecha_asignacion), INTERVAL t.duracion_min MINUTE) >= NOW()
+             ORDER BY DATE_ADD(COALESCE(t.start_at, ct.fecha_asignacion), INTERVAL t.duracion_min MINUTE) ASC`,
             [alumno_id]
         );
 
@@ -77,7 +78,8 @@ exports.verExamen = async (req, res) => {
         // Verificar que el test está disponible para el alumno (en su clase y en fecha)
         const [tests] = await pool.query(
             `SELECT t.*, c.nombre as clase_nombre, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos,
-                    DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) as end_at
+                    COALESCE(t.start_at, ct.fecha_asignacion) as inicio_at,
+                    DATE_ADD(COALESCE(t.start_at, ct.fecha_asignacion), INTERVAL t.duracion_min MINUTE) as end_at
              FROM clase_alumno ca
              JOIN clase c ON ca.clase_id = c.clase_id
              JOIN clase_test ct ON c.clase_id = ct.clase_id
@@ -88,7 +90,7 @@ exports.verExamen = async (req, res) => {
                AND t.test_id = ?
                AND t.activo = 'activa'
                AND (t.start_at IS NULL OR t.start_at <= NOW())
-               AND (t.start_at IS NULL OR DATE_ADD(t.start_at, INTERVAL t.duracion_min MINUTE) >= NOW())`,
+               AND DATE_ADD(COALESCE(t.start_at, ct.fecha_asignacion), INTERVAL t.duracion_min MINUTE) >= NOW()`,
             [alumno_id, test_id]
         );
 
