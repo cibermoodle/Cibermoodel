@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const User = require('./models/User');
 const pool = require('./db/mysql');
 const { requireAuth, requireRole } = require('./middlewares/auth');
+const profesorRoutes = require('../routes/profesor/profesorroute');
+const alumnoRoutes = require('../routes/alumno/alumnoroute');
 const app = express();
 
 let bcrypt;
@@ -216,12 +218,8 @@ app.get('/auth/logout', (req, res) => {
     res.redirect('/logout');
 });
 
-app.get('/alumno', requireAuth, requireRole('alumno'), (req, res) => {
-    res.render('alumno/alumno', { title: 'Alumno', paginaActual: 'alumno' });
-});
-app.get('/profesor', requireAuth, requireRole('profesor'), (req, res) => {
-    res.render('profesor/profesor', { title: 'Profesor', paginaActual: 'profesor' });
-});
+app.use('/profesor', requireAuth, requireRole('profesor'), profesorRoutes);
+app.use('/alumno', requireAuth, requireRole('alumno'), alumnoRoutes);
 app.get('/admin', requireAuth, requireRole('admin'), (req, res) => {
         res.render('admin/dashboard', { title: 'Administrador', paginaActual: 'admin' });
 });

@@ -1,0 +1,57 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo"><%= examen.titulo %></h2>
+</div>
+
+<div class="clase-card" style="padding: 20px; margin-bottom: 20px; border: 1px solid #b4b4ff;">
+    <div style="margin-bottom: 12px;">
+        <strong>Tipo:</strong> <%= examen.tipo %><br>
+        <strong>Clase:</strong> <%= examen.clase_nombre %><br>
+        <strong>Profesor:</strong> <%= examen.profesor_nombre %> <%= examen.profesor_apellidos %><br>
+        <strong>Duración:</strong> <%= examen.duracion_min %> minutos<br>
+        <strong>Inicio:</strong> <%= examen.start_at ? new Date(examen.start_at).toLocaleString('es-ES') : 'No especificado' %><br>
+        <strong>Fin:</strong> <%= examen.end_at ? new Date(examen.end_at).toLocaleDateString('es-ES') + ' ' + new Date(examen.end_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'No especificado' %>
+    </div>
+    <div>
+        <p><%= examen.descripcion ? examen.descripcion : 'Sin descripción disponible.' %></p>
+    </div>
+</div>
+
+<% if (preguntas && preguntas.length > 0) { %>
+    <div class="clase-card" style="padding: 20px; margin-bottom: 20px; border: 1px solid #b4b4ff;">
+        <h3 style="margin-top:0;">Preguntas</h3>
+        <form method="POST" action="/alumno/examen/<%= examen.test_id %>">
+            <% preguntas.forEach((preg, index) => { %>
+                <div style="margin-bottom: 24px; padding: 16px; background: #f9f9ff; border-radius: 8px; border: 1px solid #e0e0ff;">
+                    <p style="margin: 0 0 12px 0; font-weight: bold;"><%= index + 1 %>. <%= preg.enunciado %></p>
+                    <% if (preg.opciones.length > 0) { %>
+                        <% preg.opciones.forEach(opcion => { %>
+                            <div style="margin-bottom: 10px;">
+                                <label style="cursor:pointer; display:flex; align-items:center; gap:10px;">
+                                    <input type="radio" name="pregunta_<%= preg.pregunta_id %>" value="<%= opcion.opcion_id %>" style="width:16px; height:16px;">
+                                    <span><strong><%= opcion.letra %>.</strong> <%= opcion.texto %></span>
+                                </label>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div style="color: #666;">No hay opciones disponibles para esta pregunta.</div>
+                    <% } %>
+                </div>
+            <% }) %>
+            <div style="margin-top: 24px;">
+                <button type="submit" class="btn-nueva-clase" style="background: #4CAF50; border: none; cursor: pointer; font-size: 1rem;">
+                    ✅ Enviar respuestas
+                </button>
+            </div>
+        </form>
+    </div>
+<% } else { %>
+    <div class="clase-card" style="padding: 20px; margin-bottom: 20px; border: 1px solid #b4b4ff;">
+        <p>No hay preguntas disponibles para este examen.</p>
+    </div>
+<% } %>
+
+<div style="margin-top: 20px;">
+    <a href="/alumno" class="btn-nueva-clase" style="background: #555;">⬅️ Volver a mis clases</a>
+</div>

@@ -5,6 +5,7 @@ const pool = mysql.createPool({
     user: "root",
     password: "ceti",
     database: "plataforma_educativa",
+    timezone: 'local',
 })
 
 module.exports = pool;

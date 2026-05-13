@@ -263,6 +263,7 @@ input:checked + .slider:before { transform: translateX(18px); }
   min-width: 200px;
 }
 .dropdown-menu.open {
+  display: block;
   opacity: 1;
   pointer-events: all;
   transform: translateY(0);
