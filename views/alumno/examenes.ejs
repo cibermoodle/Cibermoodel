@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo">Exámenes activos</h2>
+    <a href="/alumno" class="btn-nueva-clase">← Volver al dashboard</a>
+</div>
+
+<% if (examenes.length > 0) { %>
+    <div class="clases-grid" style="margin-bottom: 30px;">
+        <% examenes.forEach(examen => { %>
+            <div class="clase-card" style="border: 1px solid #b4b4ff;">
+                <div class="clase-card-banner">
+                    <p class="clase-card-banner-titulo"><%= examen.titulo %></p>
+                    <a href="/alumno/examen/<%= examen.test_id %>" class="btn-editar-card">✅ Acceder</a>
+                </div>
+                <div class="clase-card-acciones">
+                    <div class="accion-item">
+                        <strong>Clase:</strong> <%= examen.clase_nombre %>
+                    </div>
+                    <div class="accion-item">
+                        <strong>Duración:</strong> <%= examen.duracion_min %> min
+                    </div>
+                </div>
+                <div class="clase-card-footer">
+                    <span>📄 <%= examen.descripcion ? examen.descripcion.substring(0, 40) + '...' : 'Sin descripción' %></span>
+                    <span>⏰ Hasta <%= examen.end_at ? new Date(examen.end_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'sin fecha' %></span>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+<% } else { %>
+    <div class="clases-vacio" style="margin-bottom: 30px;">
+        <div class="icono">📝</div>
+        <p>No tienes exámenes activos disponibles ahora mismo.</p>
+        <p>Comprueba la fecha de inicio y duración de los exámenes asignados.</p>
+    </div>
+<% } %>
