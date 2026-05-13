@@ -331,46 +331,34 @@ exports.desasignarAlumnoDeClase = async (req, res) => {
 
 // POST /profesor/api/crear-alumno - Crear un nuevo alumno
 exports.crearAlumno = async (req, res) => {
-    const { nombre, apellido, edad, email } = req.body;
+    const { nombre, apellido, edad, email, password } = req.body;
     
-    if (!nombre || !apellido || !edad || !email) {
+    if (!nombre || !apellido || !edad || !email || !password) {
         return res.status(400).json({ ok: false, error: 'Faltan datos obligatorios' });
     }
-
     try {
-        // Verificar si el email ya existe
         const [existente] = await pool.query(
             'SELECT usuario_id FROM usuario WHERE email = ?',
             [email.toLowerCase()]
         );
-
         if (existente.length > 0) {
             return res.status(400).json({ ok: false, error: 'El correo ya está registrado' });
         }
 
-        // Crear una contraseña por defecto (fecha_nacimiento o similar)
-        // En una app real, enviarías un email con contraseña temporal
-        const contraseñaDefecto = 'Alumno123!';
-        const passwordHash = crypto.createHash('sha256').update(contraseñaDefecto).digest('hex');
+        const passwordHash = await bcrypt.hash(password, 10);
 
-        // Insertar usuario
         const [usuarioResult] = await pool.query(
             `INSERT INTO usuario (nombre, apellidos, email, password_hash, rol)
              VALUES (?, ?, ?, ?, 'alumno')`,
             [nombre, apellido, email.toLowerCase(), passwordHash]
         );
-
         const usuarioId = usuarioResult.insertId;
-
-        // Insertar alumno
         const [alumnoResult] = await pool.query(
             `INSERT INTO alumno (usuario_id, fecha_nacimiento)
              VALUES (?, DATE_SUB(CURDATE(), INTERVAL ? YEAR))`,
             [usuarioId, edad]
         );
-
         const alumnoId = alumnoResult.insertId;
-
         res.json({ 
             ok: true, 
             alumno_id: alumnoId,
