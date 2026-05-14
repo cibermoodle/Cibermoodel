@@ -2,7 +2,10 @@
 
 <div class="prof-header">
     <h2 class="prof-titulo">Mis clases</h2>
-    <a href="/alumno/unirse" class="btn-nueva-clase">➕ Unirse a una clase</a>
+    <div style="display:flex; gap:10px;">
+        <a href="/alumno/examenes" class="btn-nueva-clase" style="background-color: #28a745;">📝 Exámenes activos</a>
+        <a href="/alumno/unirse" class="btn-nueva-clase">➕ Unirse a una clase</a>
+    </div>
 </div>
 
 <% if (clases.length === 0) { %>

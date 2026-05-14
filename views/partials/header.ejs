@@ -11,7 +11,7 @@
 
   <!-- LOGO -->
   <div class="logo-area">
-    <a class="moodle-logo" href="/">
+    <a class="moodle-logo" href="/inicio">
       <div class="moodle-icon">
         <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 72V38c0-3 2-5 5-5h6c3 0 5 2 5 5v34h10V50c0-3 2-5 5-5h6c3 0 5 2 5 5v22h10V46c0-3 2-5 5-5h6c3 0 5 2 5 5v26"
@@ -96,12 +96,32 @@
 
     <!-- Avatar + dropdown perfil -->
     <div class="dropdown-wrapper" id="profileWrapper">
-      <div class="avatar-wrapper" id="profileBtn">
+      <div
+        class="avatar-wrapper"
+        id="profileBtn"
+        role="button"
+        tabindex="0"
+        aria-haspopup="true"
+        aria-expanded="false"
+        onkeydown="if(event.key==='Enter' || event.key===' '){event.preventDefault(); this.click();}"
+      >
         <div class="avatar"><%= iniciales %></div>
         <span>▾</span>
       </div>
 
       <div class="dropdown-menu profile-menu" id="profileMenu">
+        <div class="profile-menu-header">
+          <span class="profile-menu-name"><%= user ? user.nombre + ' ' + apellidoParaUI : 'Usuario' %></span>
+          <span class="profile-menu-email"><%= user && user.email ? user.email : '' %></span>
+          <span class="rol-badge <%= user && user.rol === 'profesor' ? 'rol-profesor' : user && user.rol === 'admin' ? 'rol-admin' : 'rol-alumno' %>">
+            <%= user && user.rol === 'profesor' ? 'Profesor' : user && user.rol === 'admin' ? 'Administrador' : 'Alumno' %>
+          </span>
+        </div>
+        <a href="/perfil" class="menu-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi perfil
+        </a>
+        <div class="menu-divider"></div>
         <a href="/logout" class="menu-item menu-item--danger">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Cerrar sesión
@@ -128,16 +148,47 @@
   const profileBtn  = document.getElementById('profileBtn');
   const profileMenu = document.getElementById('profileMenu');
 
-  function toggle(menu, other) {
-    other.classList.remove('open');
+  function closeMenu(menu) {
+    if (menu) {
+      menu.classList.remove('open');
+    }
+  }
+
+  function toggleMenu(menu, other) {
+    if (!menu) {
+      return;
+    }
+
+    closeMenu(other);
     menu.classList.toggle('open');
   }
 
-  notifBtn.addEventListener('click',    e => { e.stopPropagation(); toggle(notifMenu, profileMenu); });
-  profileBtn.addEventListener('click',  e => { e.stopPropagation(); toggle(profileMenu, notifMenu); });
-  document.addEventListener('click',   () => { notifMenu.classList.remove('open'); profileMenu.classList.remove('open'); });
-  notifMenu.addEventListener('click',    e => e.stopPropagation());
-  profileMenu.addEventListener('click',  e => e.stopPropagation());
+  if (notifBtn) {
+    notifBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleMenu(notifMenu, profileMenu);
+    });
+  }
+
+  if (profileBtn) {
+    profileBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleMenu(profileMenu, notifMenu);
+    });
+  }
+
+  document.addEventListener('click', () => {
+    closeMenu(notifMenu);
+    closeMenu(profileMenu);
+  });
+
+  if (notifMenu) {
+    notifMenu.addEventListener('click', e => e.stopPropagation());
+  }
+
+  if (profileMenu) {
+    profileMenu.addEventListener('click', e => e.stopPropagation());
+  }
 })();
 </script>
 
