@@ -55,7 +55,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="start_at" class="form-label">Fecha y Hora de Inicio</label>
                                 <input type="datetime-local" class="form-control" id="start_at" name="start_at" 
-                                       value="<%= test && test.start_at ? test.start_at.toISOString().slice(0, 16) : '' %>">
+                                       value="<%= test && test.start_at ? (() => { const d = new Date(test.start_at); const p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; })() : '' %>">
                                 <small class="text-muted">Déjalo vacío para que esté disponible inmediatamente</small>
                             </div>
                         </div>

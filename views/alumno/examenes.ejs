@@ -1,5 +1,37 @@
 <link rel="stylesheet" href="/profesores.css">
 
+<!-- Modal "examen completado" -->
+<% const testCompletado = typeof query !== 'undefined' && query.completado ? query.completado : null; %>
+<% if (testCompletado) { %>
+<div id="modal-completado" style="
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.45);
+">
+    <div style="
+        background: #fff; border-radius: 14px; padding: 32px 36px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18); text-align: center;
+        max-width: 360px; width: 90%;
+    ">
+        <div style="font-size: 2.5rem; margin-bottom: 10px;">🎉</div>
+        <h3 style="margin: 0 0 8px 0; color: #333;">¡Examen enviado!</h3>
+        <p style="color: #666; margin: 0 0 24px 0;">Tus respuestas han sido guardadas correctamente.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="/alumno/resultados/<%= testCompletado %>" style="
+                display: block; padding: 12px 20px;
+                background: #4a4aff; color: #fff; border-radius: 8px;
+                text-decoration: none; font-weight: 600; font-size: 1rem;
+            ">📊 Ver mis resultados</a>
+            <button onclick="document.getElementById('modal-completado').remove()" style="
+                padding: 10px 20px; background: #f0f0f0; color: #555;
+                border: none; border-radius: 8px; cursor: pointer;
+                font-size: 0.95rem;
+            ">Cerrar</button>
+        </div>
+    </div>
+</div>
+<% } %>
+
 <div class="prof-header">
     <h2 class="prof-titulo">Exámenes activos</h2>
     <a href="/alumno" class="btn-nueva-clase">← Volver al dashboard</a>
@@ -35,3 +67,4 @@
         <p>Comprueba la fecha de inicio y duración de los exámenes asignados.</p>
     </div>
 <% } %>
+

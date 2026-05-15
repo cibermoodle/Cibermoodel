@@ -4,7 +4,8 @@ const pool = require('../../src/db/mysql');
 exports.dashboard = async (req, res) => {
     console.log('✅ Entrando al dashboard de alumno');
     try {
-        const alumno_id = 1; // Cambiar por sesión real
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
         
         // Obtener las clases del alumno
         const [clases] = await pool.query(
@@ -36,7 +37,8 @@ exports.dashboard = async (req, res) => {
 // GET /alumno/examenes - Ver tests disponibles según fecha de inicio y fin
 exports.verExamenes = async (req, res) => {
     try {
-        const alumno_id = 1; // Cambiar por sesión real
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
 
         const [examenes] = await pool.query(
             `SELECT t.*, c.nombre as clase_nombre,
@@ -54,8 +56,31 @@ exports.verExamenes = async (req, res) => {
             [alumno_id]
         );
 
+        const [completados] = await pool.query(
+            `SELECT DISTINCT t.test_id, t.titulo, c.nombre as clase_nombre,
+                    u.nombre as profesor_nombre, u.apellidos as profesor_apellidos,
+                    (SELECT COUNT(*) FROM pregunta p2
+                     JOIN respuesta r2 ON p2.pregunta_id = r2.pregunta_id
+                     JOIN opcion o2 ON r2.opcion_id = o2.opcion_id
+                     WHERE p2.test_id = t.test_id AND r2.alumno_id = ? AND o2.es_correcta = 1) as correctas,
+                    (SELECT COUNT(*) FROM pregunta p3 WHERE p3.test_id = t.test_id) as total
+             FROM respuesta r
+             JOIN pregunta p ON r.pregunta_id = p.pregunta_id
+             JOIN test t ON p.test_id = t.test_id
+             JOIN clase_test ct ON t.test_id = ct.test_id
+             JOIN clase c ON ct.clase_id = c.clase_id
+             JOIN clase_alumno ca ON c.clase_id = ca.clase_id
+             JOIN profesor pr ON t.profesor_id = pr.profesor_id
+             JOIN usuario u ON pr.usuario_id = u.usuario_id
+             WHERE r.alumno_id = ? AND ca.alumno_id = ?
+             ORDER BY t.titulo ASC`,
+            [alumno_id, alumno_id, alumno_id]
+        );
+
         res.render('alumno/examenes', {
             examenes,
+            completados,
+            query: req.query,
             title: 'Exámenes disponibles',
             paginaActual: 'examenes'
         });
@@ -63,6 +88,8 @@ exports.verExamenes = async (req, res) => {
         console.error('❌ ERROR en verExamenes:', err.message);
         res.render('alumno/examenes', {
             examenes: [],
+            completados: [],
+            query: {},
             title: 'Exámenes disponibles',
             paginaActual: 'examenes'
         });
@@ -73,7 +100,8 @@ exports.verExamenes = async (req, res) => {
 exports.verExamen = async (req, res) => {
     try {
         const test_id = req.params.id;
-        const alumno_id = 1; // Cambiar por sesión real
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
 
         // Verificar que el test está disponible para el alumno (en su clase y en fecha)
         const [tests] = await pool.query(
@@ -96,6 +124,17 @@ exports.verExamen = async (req, res) => {
 
         if (tests.length === 0) {
             return res.status(404).render('404', { title: 'Examen no disponible' });
+        }
+
+        // Comprobar si el alumno ya respondió este examen
+        const [yaRespondido] = await pool.query(
+            `SELECT COUNT(*) as total FROM respuesta r
+             JOIN pregunta p ON r.pregunta_id = p.pregunta_id
+             WHERE p.test_id = ? AND r.alumno_id = ?`,
+            [test_id, alumno_id]
+        );
+        if (yaRespondido[0].total > 0) {
+            return res.redirect(`/alumno/resultados/${test_id}`);
         }
 
         // Obtener preguntas con sus opciones
@@ -130,7 +169,8 @@ exports.verExamen = async (req, res) => {
 exports.enviarRespuestas = async (req, res) => {
     try {
         const test_id = req.params.id;
-        const alumno_id = 1; // Cambiar por sesión real
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
         const respuestas = req.body; // { pregunta_X: opcion_id, ... }
 
         // Borrar respuestas previas del alumno para este test
@@ -153,9 +193,119 @@ exports.enviarRespuestas = async (req, res) => {
             );
         }
 
-        res.redirect(`/alumno/examenes`);
+        res.redirect(`/alumno/examenes?completado=${test_id}`);
     } catch (err) {
         console.error('❌ ERROR en enviarRespuestas:', err.message);
+        res.status(500).render('500', { title: 'Error del servidor' });
+    }
+};
+
+// GET /alumno/resultados/:id - Ver resultados y respuestas corregidas
+exports.verResultados = async (req, res) => {
+    try {
+        const test_id = req.params.id;
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
+
+        const [tests] = await pool.query(
+            `SELECT t.*, c.nombre as clase_nombre, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos
+             FROM test t
+             JOIN clase_test ct ON t.test_id = ct.test_id
+             JOIN clase c ON ct.clase_id = c.clase_id
+             JOIN clase_alumno ca ON c.clase_id = ca.clase_id
+             JOIN profesor p ON t.profesor_id = p.profesor_id
+             JOIN usuario u ON p.usuario_id = u.usuario_id
+             WHERE t.test_id = ? AND ca.alumno_id = ?`,
+            [test_id, alumno_id]
+        );
+
+        if (tests.length === 0) {
+            return res.status(404).render('404', { title: 'Examen no encontrado' });
+        }
+
+        const [preguntas] = await pool.query(
+            `SELECT * FROM pregunta WHERE test_id = ? ORDER BY orden ASC`,
+            [test_id]
+        );
+
+        let correctas = 0;
+        for (const preg of preguntas) {
+            const [opciones] = await pool.query(
+                `SELECT o.opcion_id, o.letra, o.texto, o.es_correcta,
+                        IF(r.opcion_id IS NOT NULL, 1, 0) as seleccionada
+                 FROM opcion o
+                 LEFT JOIN respuesta r ON o.opcion_id = r.opcion_id
+                   AND r.alumno_id = ? AND r.pregunta_id = ?
+                 WHERE o.pregunta_id = ?
+                 ORDER BY o.letra ASC`,
+                [alumno_id, preg.pregunta_id, preg.pregunta_id]
+            );
+            preg.opciones = opciones;
+            const seleccionada = opciones.find(o => o.seleccionada);
+            preg.sin_respuesta = !seleccionada;
+            preg.acertada = seleccionada && seleccionada.es_correcta;
+            if (preg.acertada) correctas++;
+        }
+
+        res.render('alumno/resultados', {
+            examen: tests[0],
+            preguntas,
+            correctas,
+            total: preguntas.length,
+            title: 'Resultados: ' + tests[0].titulo,
+            paginaActual: 'examenes'
+        });
+    } catch (err) {
+        console.error('❌ ERROR en verResultados:', err.message);
+        res.status(500).render('500', { title: 'Error del servidor' });
+    }
+};
+
+// GET /alumno/clase/:id/calificaciones - Ver calificaciones del alumno en esa clase
+exports.verCalificaciones = async (req, res) => {
+    try {
+        const clase_id = req.params.id;
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
+
+        const [clase] = await pool.query(
+            `SELECT c.*, u.nombre as profesor_nombre, u.apellidos as profesor_apellidos
+             FROM clase c
+             JOIN profesor p ON c.profesor_id = p.profesor_id
+             JOIN usuario u ON p.usuario_id = u.usuario_id
+             WHERE c.clase_id = ?`,
+            [clase_id]
+        );
+
+        if (clase.length === 0) {
+            return res.status(404).render('404', { title: 'Clase no encontrada' });
+        }
+
+        const [tests] = await pool.query(
+            `SELECT t.test_id, t.titulo,
+                    (SELECT COUNT(*) FROM pregunta p WHERE p.test_id = t.test_id) as total,
+                    (SELECT COUNT(*) FROM respuesta r
+                     JOIN pregunta p2 ON r.pregunta_id = p2.pregunta_id
+                     JOIN opcion o ON r.opcion_id = o.opcion_id
+                     WHERE p2.test_id = t.test_id AND r.alumno_id = ? AND o.es_correcta = 1) as correctas,
+                    (SELECT COUNT(*) FROM respuesta r2
+                     JOIN pregunta p3 ON r2.pregunta_id = p3.pregunta_id
+                     WHERE p3.test_id = t.test_id AND r2.alumno_id = ?) as respondidas
+             FROM clase_test ct
+             JOIN test t ON ct.test_id = t.test_id
+             WHERE ct.clase_id = ?
+             ORDER BY t.titulo ASC`,
+            [alumno_id, alumno_id, clase_id]
+        );
+
+        res.render('alumno/calificaciones', {
+            clase: clase[0],
+            tests,
+            title: 'Calificaciones - ' + clase[0].nombre,
+            paginaActual: 'alumno'
+        });
+    } catch (err) {
+        console.error('❌ ERROR en verCalificaciones:', err.message);
         res.status(500).render('500', { title: 'Error del servidor' });
     }
 };
@@ -173,7 +323,6 @@ exports.mostrarUnirse = (req, res) => {
 // POST /alumno/unirse - Unirse a una clase con código
 exports.unirseClase = async (req, res) => {
     const { codigo_acceso } = req.body;
-    const alumno_id = 1; // Cambiar por sesión real
 
     if (!codigo_acceso || codigo_acceso.trim() === '') {
         return res.render('alumno/unirseClase', {
@@ -185,6 +334,8 @@ exports.unirseClase = async (req, res) => {
     }
 
     try {
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
         // Verificar que la clase existe y está activa
         const [clases] = await pool.query(
             'SELECT * FROM clase WHERE codigo_acceso = ? AND activa = "activa"',
@@ -244,7 +395,8 @@ exports.unirseClase = async (req, res) => {
 exports.verDetalleClase = async (req, res) => {
     try {
         const clase_id = req.params.id;
-        const alumno_id = 1; // Cambiar por sesión real
+        const [alumnoRow] = await pool.query('SELECT alumno_id FROM alumno WHERE usuario_id = ?', [req.session.user.usuario_id]);
+        const alumno_id = alumnoRow[0].alumno_id;
 
         // Obtener datos de la clase
         const [clase] = await pool.query(

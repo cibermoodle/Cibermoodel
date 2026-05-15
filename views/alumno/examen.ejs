@@ -4,6 +4,81 @@
     <h2 class="prof-titulo"><%= examen.titulo %></h2>
 </div>
 
+<!-- Contador de tiempo -->
+<div id="timer-container" style="
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    border-bottom: 2px solid #b4b4ff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+">
+    <span style="font-size: 1rem; font-weight: 600; color: #555;">⏱ Tiempo restante:</span>
+    <span id="timer-display" style="
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4a4aff;
+        font-variant-numeric: tabular-nums;
+        min-width: 90px;
+    ">--:--</span>
+    <span id="timer-warning" style="display:none; color:#e53935; font-weight:600; font-size:0.95rem;">⚠️ ¡Menos de 1 minuto!</span>
+</div>
+
+<script>
+(function () {
+    const endTime = Date.now() + (<%= examen.duracion_min %> * 60 * 1000);
+
+    const display = document.getElementById('timer-display');
+    const warning = document.getElementById('timer-warning');
+    const container = document.getElementById('timer-container');
+    const form = document.querySelector('form[method="POST"]');
+
+    function formatTime(ms) {
+        if (ms <= 0) return '00:00';
+        const totalSec = Math.floor(ms / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        if (h > 0) {
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function tick() {
+        const remaining = endTime - Date.now();
+
+        if (remaining <= 0) {
+            display.textContent = '00:00';
+            display.style.color = '#e53935';
+            container.style.background = '#fff3f3';
+            container.style.borderBottomColor = '#e53935';
+            if (form) form.submit();
+            return;
+        }
+
+        display.textContent = formatTime(remaining);
+
+        if (remaining <= 60000) {
+            warning.style.display = 'inline';
+            display.style.color = '#e53935';
+            container.style.background = '#fff3f3';
+            container.style.borderBottomColor = '#e53935';
+        } else if (remaining <= 300000) {
+            display.style.color = '#f57c00';
+        }
+
+        setTimeout(tick, 1000);
+    }
+
+    tick();
+})();
+</script>
+
 <div class="clase-card" style="padding: 20px; margin-bottom: 20px; border: 1px solid #b4b4ff;">
     <div style="margin-bottom: 12px;">
         <strong>Tipo:</strong> <%= examen.tipo %><br>

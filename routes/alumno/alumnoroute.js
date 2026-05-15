@@ -18,6 +18,12 @@ router.get('/examenes', alumnoController.verExamenes);
 router.get('/examen/:id', alumnoController.verExamen);
 router.post('/examen/:id', alumnoController.enviarRespuestas);
 
+// Ver resultados de un examen completado
+router.get('/resultados/:id', alumnoController.verResultados);
+
+// Ver calificaciones del alumno en una clase
+router.get('/clase/:id/calificaciones', alumnoController.verCalificaciones);
+
 // Ver detalle de una clase (y lista de alumnos registrados)
 router.get('/clase/:id', alumnoController.verDetalleClase);
 

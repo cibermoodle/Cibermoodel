@@ -1,0 +1,48 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo">Calificaciones — <%= clase.nombre %></h2>
+    <a href="/alumno" class="btn-nueva-clase" style="background:#555;">⬅️ Volver</a>
+</div>
+
+<div class="clase-card" style="padding: 20px; margin-bottom: 24px; border: 1px solid #b4b4ff;">
+    <strong>Profesor:</strong> <%= clase.profesor_nombre %> <%= clase.profesor_apellidos %>
+</div>
+
+<% if (tests.length === 0) { %>
+    <div class="clases-vacio">
+        <div class="icono">📋</div>
+        <p>No hay exámenes asignados a esta clase todavía.</p>
+    </div>
+<% } else { %>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <% tests.forEach(t => { %>
+            <%
+              const realizada = t.respondidas > 0;
+              const nota = realizada && t.total > 0 ? Math.round((t.correctas / t.total) * 10 * 10) / 10 : null;
+              const porcentaje = realizada && t.total > 0 ? Math.round((t.correctas / t.total) * 100) : null;
+              const color = !realizada ? '#bdbdbd' : nota >= 5 ? '#4CAF50' : nota >= 3 ? '#f57c00' : '#e53935';
+            %>
+            <div class="clase-card" style="padding: 16px 20px; border: 2px solid <%= color %>; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                <div>
+                    <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 1rem;"><%= t.titulo %></p>
+                    <% if (realizada) { %>
+                        <span style="color: <%= color %>; font-size: 1rem; font-weight: 700;">
+                            <%= nota.toFixed(1) %> / 10
+                        </span>
+                        <span style="color: #888; font-size: 0.88rem; margin-left: 8px;">
+                            (<%= t.correctas %>/<%= t.total %> correctas · <%= porcentaje %>%)
+                        </span>
+                    <% } else { %>
+                        <span style="color: #999; font-size: 0.9rem;">Pendiente de realizar</span>
+                    <% } %>
+                </div>
+                <% if (realizada) { %>
+                    <a href="/alumno/resultados/<%= t.test_id %>" class="btn-nueva-clase" style="background: #4a4aff; white-space: nowrap;">
+                        📊 Ver detalle
+                    </a>
+                <% } %>
+            </div>
+        <% }) %>
+    </div>
+<% } %>

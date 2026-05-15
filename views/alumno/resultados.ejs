@@ -1,0 +1,69 @@
+<link rel="stylesheet" href="/profesores.css">
+
+<div class="prof-header">
+    <h2 class="prof-titulo">Resultados: <%= examen.titulo %></h2>
+</div>
+
+<%
+  const porcentaje = total > 0 ? Math.round((correctas / total) * 100) : 0;
+  const nota = total > 0 ? Math.round((correctas / total) * 10 * 10) / 10 : 0;
+  const colorNota = nota >= 5 ? '#4CAF50' : nota >= 3 ? '#f57c00' : '#e53935';
+%>
+
+<div class="clase-card" style="padding: 24px; margin-bottom: 24px; border: 2px solid <%= colorNota %>; text-align: center;">
+    <div style="font-size: 0.95rem; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">Calificación obtenida</div>
+    <div style="font-size: 4rem; font-weight: bold; color: <%= colorNota %>;">
+        <%= nota.toFixed(1) %> <span style="font-size: 1.5rem; color: #aaa;">/ 10</span>
+    </div>
+    <div style="font-size: 1rem; color: #777; margin-top: 6px;">
+        <%= correctas %> de <%= total %> correctas &nbsp;·&nbsp; <%= porcentaje %>%
+    </div>
+    <div style="margin-top: 12px; color: #555;">
+        <strong>Clase:</strong> <%= examen.clase_nombre %> &nbsp;|&nbsp;
+        <strong>Profesor:</strong> <%= examen.profesor_nombre %> <%= examen.profesor_apellidos %>
+    </div>
+</div>
+
+<% preguntas.forEach((preg, index) => { %>
+    <%
+      const borderColor = preg.sin_respuesta ? '#bdbdbd' : preg.acertada ? '#4CAF50' : '#e53935';
+      const icono = preg.sin_respuesta ? '⬜' : preg.acertada ? '✅' : '❌';
+    %>
+    <div class="clase-card" style="padding: 20px; margin-bottom: 16px; border: 2px solid <%= borderColor %>;">
+        <p style="margin: 0 0 14px 0; font-weight: bold;"><%= icono %> <%= index + 1 %>. <%= preg.enunciado %></p>
+
+        <% preg.opciones.forEach(opcion => { %>
+            <%
+              let bg = 'transparent';
+              let textColor = '#333';
+              let badge = '';
+              if (opcion.es_correcta && opcion.seleccionada) {
+                bg = '#e8f5e9'; textColor = '#2e7d32'; badge = '✅ Correcta (tu respuesta)';
+              } else if (opcion.es_correcta) {
+                bg = '#e8f5e9'; textColor = '#2e7d32'; badge = '✅ Respuesta correcta';
+              } else if (opcion.seleccionada) {
+                bg = '#ffebee'; textColor = '#c62828'; badge = '❌ Tu respuesta';
+              }
+            %>
+            <div style="padding: 8px 12px; margin-bottom: 6px; border-radius: 6px; background: <%= bg %>; color: <%= textColor %>; border: 1px solid <%= bg === 'transparent' ? '#e0e0e0' : bg %>; display: flex; align-items: center; gap: 8px;">
+                <strong><%= opcion.letra %>.</strong>
+                <span><%= opcion.texto %></span>
+                <% if (badge) { %><span style="font-size: 0.85rem; margin-left: auto;"><%= badge %></span><% } %>
+            </div>
+        <% }) %>
+
+        <% if (preg.sin_respuesta) { %>
+            <p style="color: #888; font-size: 0.9rem; margin: 10px 0 0 0;">⬜ No respondiste esta pregunta.</p>
+        <% } %>
+
+        <% if (preg.feedback && !preg.acertada) { %>
+            <div style="margin-top: 12px; padding: 10px 14px; background: #f3f0ff; border-left: 3px solid #7c4dff; border-radius: 4px; font-size: 0.92rem; color: #4a148c;">
+                💡 <strong>Feedback:</strong> <%= preg.feedback %>
+            </div>
+        <% } %>
+    </div>
+<% }) %>
+
+<div style="margin-top: 24px;">
+    <a href="/alumno/examenes" class="btn-nueva-clase" style="background: #555;">⬅️ Volver a exámenes</a>
+</div>
